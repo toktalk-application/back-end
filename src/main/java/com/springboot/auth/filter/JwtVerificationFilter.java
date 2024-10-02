@@ -1,5 +1,7 @@
 package com.springboot.auth.filter;
 
+import com.springboot.auth.CustomAuthenticationToken;
+import com.springboot.auth.dto.LoginDto;
 import com.springboot.auth.jwt.JwtTokenizer;
 import com.springboot.auth.utils.CustomAuthorityUtils;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -54,7 +56,20 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
     private void setAuthenticationToContext(Map<String,Object> claims){
         String username = (String) claims.get("username");
         List<GrantedAuthority> authorityList = authorityUtils.createAuthorities((List)claims.get("roles"));
-        Authentication authentication = new UsernamePasswordAuthenticationToken(username,null,authorityList);
+
+        LoginDto.UserType userType;
+        switch ((String) claims.get("usertype")){
+            case "MEMBER":
+                userType = LoginDto.UserType.MEMBER;
+                break;
+            case "COUNSELOR":
+                userType = LoginDto.UserType.COUNSELOR;
+                break;
+            default:
+                userType = null;
+        }
+        /*Authentication authentication = new UsernamePasswordAuthenticationToken(username,null,authorityList);*/
+        Authentication authentication = new CustomAuthenticationToken(username,null, authorityList, userType);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

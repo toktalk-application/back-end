@@ -6,6 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExceptionCode {
     PARAM_NOT_FOUND(400, "At least 1 of valid params required"),
+    INVALID_USERTYPE(403, "Invalid usertype"),
     MEMBER_NOT_FOUND(404, "Member not found"),
     COUNSELOR_NOT_FOUND(404, "Counselor not found"),
     RESERVATION_NOT_FOUND(404, "Reservation not found"),
