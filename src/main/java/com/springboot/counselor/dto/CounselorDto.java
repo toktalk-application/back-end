@@ -42,6 +42,8 @@ public class CounselorDto {
         private String phone;
         private String company;
         private String name;
+        private List<License> licenses;
+        private List<Career> careers;
         private int chatPrice;
         private int callPrice;
     }
@@ -62,7 +64,7 @@ public class CounselorDto {
         private int chatPrice;
         private int callPrice;
         private List<CareerDto> careers;
-        private List<LicenseDto> licenses;
+        private List<LicenseDto.Response> licenses;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
     }

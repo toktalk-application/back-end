@@ -19,8 +19,8 @@ public interface CounselorMapper {
         List<AvailableDate> availableDateList = new ArrayList<>(counselor.getAvailableDates().values());
 
         // 자격증 -> 자격증 dto 변환
-        List<LicenseDto> licenseDtos = counselor.getLicenses().stream()
-                .map(license -> new LicenseDto(
+        List<LicenseDto.Response> licenseDtos = counselor.getLicenses().stream()
+                .map(license -> new LicenseDto.Response(
                         license.getLicenseId(),
                         license.getLicenseName(),
                         license.getOrganization(),

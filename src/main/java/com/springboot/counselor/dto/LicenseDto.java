@@ -7,13 +7,24 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class LicenseDto {
-    private long licenseDto;
-    private String licenseName;
-    private String organization;
-    private LocalDate issueDate;
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Post{
+        private String licenseName;
+        private String organization;
+        private LocalDate issueDate;
+    }
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Response{
+        private long licenseDto;
+        private String licenseName;
+        private String organization;
+        private LocalDate issueDate;
+    }
 }
