@@ -1,6 +1,8 @@
 package com.springboot.reservation.dto;
 
+import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
+import com.springboot.reservation.entity.Review;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,5 +40,16 @@ public class ReservationDto {
         private LocalDate date;
         private LocalTime startTime;
         private LocalTime endTime;
+        private Review review;
+        private Report report;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Review{
+        private String content;
+        private int rating;
     }
 }
