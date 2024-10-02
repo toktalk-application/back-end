@@ -3,6 +3,7 @@ package com.springboot.counselor.controller;
 import com.springboot.auth.CustomAuthenticationToken;
 import com.springboot.auth.dto.LoginDto;
 import com.springboot.counselor.dto.CounselorDto;
+import com.springboot.counselor.dto.LicenseDto;
 import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.mapper.CounselorMapper;
 import com.springboot.counselor.service.CounselorService;
@@ -14,6 +15,7 @@ import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.response.MultiResponseDto;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.response.SingleResponseEntity;
+import com.springboot.utils.CredentialUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -34,6 +36,8 @@ public class CounselorController {
     private final CounselorMapper counselorMapper;
     private final CounselorService counselorService;
     private final ReservationMapper reservationMapper;
+
+    // 상담사 회원 가입
     @PostMapping
     public ResponseEntity<?> postCounselor(@RequestBody CounselorDto.Post postDto){
         Counselor tempCounselor = counselorMapper.counselorPostDtoToCounselor(postDto);
@@ -42,6 +46,32 @@ public class CounselorController {
         URI location = UriCreator.createUri(DEFAULT_URL, savedCounselor.getCounselorId());
         return ResponseEntity.created(location).build();
     }
+    // 자격증 추가 등록
+    @PostMapping("/licenses")
+    public ResponseEntity<?> postLicenses(@RequestBody List<LicenseDto.Post> postDtos,
+                                         Authentication authentication){
+        // Counselor만 요청 가능
+        if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        counselorService.addLicense(counselorId, postDtos);
+
+        return new ResponseEntity<>(null, HttpStatus.CREATED);
+    }
+    // 자격증 삭제
+    @DeleteMapping("/licenses")
+    public ResponseEntity<?> deleteLicenses(@RequestParam int licenseNumber,
+                                            Authentication authentication){
+        // Counselor만 요청 가능
+        if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        counselorService.deleteLicense(counselorId, licenseNumber);
+
+        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+    }
+
+    //TODO: 이거 상담사 누구 거 조회할 건지 처리 필요
     @GetMapping("/reservations")
     public ResponseEntity<List<ReservationDto.Response>> getReservations(Authentication authentication,
                                                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate searchDate){
@@ -65,10 +95,8 @@ public class CounselorController {
         // Counselor만 이용 가능한 요청
         if(!userType.equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
 
-        Map<String, String> credentials = (Map<String, String>) (authentication.getCredentials());
-
         Counselor counselor = counselorMapper.counselorPatchDtoToCounselor(patchDto);
-        long counselorId = Long.parseLong(credentials.get("counselorId"));
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
         counselor.setCounselorId(counselorId);
 
         // 서비스 로직 실행
