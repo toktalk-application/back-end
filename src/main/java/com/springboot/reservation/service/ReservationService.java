@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -30,8 +31,12 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
-    /*public Reservation getReservation(LocalDateTime startTime){
-        Optional<Reservation> optionalReservation = reservationRepository.findByStartTime(startTime);
+    public Reservation findReservation(long reservationId){
+        return findVerifiedReservation(reservationId);
+    }
+
+    private Reservation findVerifiedReservation(long reservationId){
+        Optional<Reservation> optionalReservation = reservationRepository.findById(reservationId);
         return optionalReservation.orElseThrow(() -> new BusinessLogicException(ExceptionCode.RESERVATION_NOT_FOUND));
-    }*/
+    }
 }

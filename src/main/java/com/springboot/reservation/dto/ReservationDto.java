@@ -34,6 +34,7 @@ public class ReservationDto {
         private long counselorId;
         private String comment;
         private Reservation.CounselingType type;
+        private Reservation.ReservationStatus status;
         private LocalDate date;
         private LocalTime startTime;
         private LocalTime endTime;
