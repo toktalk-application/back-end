@@ -49,6 +49,18 @@ public class MemberService {
             new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
     }
 
+    public Member updateMember(Member member){
+        Member realMember = findVerifiedMember(member.getMemberId());
+
+        Optional.ofNullable(member.getPassword())
+                .ifPresent(password -> {
+                    // 같은 비밀번호로 변경 불가능
+                    if(passwordEncoder.matches(password, realMember.getPassword())) throw new BusinessLogicException(ExceptionCode.SAME_PASSWORD);
+                    realMember.setPassword(passwordEncoder.encode(password));
+                });
+        return memberRepository.save(realMember);
+    }
+
     private boolean isUserIdAvailable(String userId){
         Optional<Member> optionalMember = memberRepository.findByUserId(userId);
         Optional<Counselor> optionalCounselor = counselorRepository.findByUserId(userId);
