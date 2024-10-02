@@ -37,7 +37,7 @@ public class CounselorController {
     @PostMapping
     public ResponseEntity<?> postCounselor(@RequestBody CounselorDto.Post postDto){
         Counselor tempCounselor = counselorMapper.counselorPostDtoToCounselor(postDto);
-        Counselor savedCounselor = counselorService.createCounselor(tempCounselor);
+        Counselor savedCounselor = counselorService.createCounselor(tempCounselor, postDto);
 
         URI location = UriCreator.createUri(DEFAULT_URL, savedCounselor.getCounselorId());
         return ResponseEntity.created(location).build();
