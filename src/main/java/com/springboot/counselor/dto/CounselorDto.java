@@ -1,5 +1,6 @@
 package com.springboot.counselor.dto;
 
+import com.springboot.counselor.available_date.AvailableDate;
 import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.gender.Gender;
@@ -10,6 +11,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class CounselorDto {
     @AllArgsConstructor
@@ -46,13 +48,13 @@ public class CounselorDto {
     @Setter
     public static class Response{
         private long counselorId;
-        private String password;
         private LocalDate birth;
         private Gender gender;
         private Counselor.CounselorStatus counselorStatus;
         private String name;
         private String userId;
         private String company;
+        private List<AvailableDateDto> availableDates;
         private int chatPrice;
         private int callPrice;
         private LocalDateTime createdAt;
