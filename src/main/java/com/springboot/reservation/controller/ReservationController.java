@@ -9,9 +9,11 @@ import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
 import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Reservation;
+import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.reservation.service.ReservationService;
+import com.springboot.utils.CredentialUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/reservations")
@@ -28,11 +31,10 @@ public class ReservationController {
     private final String DEFAULT_URL = "/reservations";
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
-    private final ReservationRepository reservationRepository;
     private final MemberService memberService;
     private final CounselorService counselorService;
     @PostMapping
-    public ResponseEntity<Reservation> postReservation(@RequestBody ReservationDto.Post postDto){
+    public ResponseEntity<?> postReservation(@RequestBody ReservationDto.Post postDto){
         Reservation tempReservation = reservationMapper.reservationPostDtoToReservation(postDto);
 
         // 멤버 찾아서 넣기
@@ -48,6 +50,16 @@ public class ReservationController {
         return ResponseEntity.created(location).build();
     }
 
+    // 리뷰 등록
+    @PostMapping("/{reservationId}/reviews")
+    public ResponseEntity<?> postReview(@PathVariable long reservationId,
+                                        @RequestBody ReservationDto.Review reviewDto,
+                                        Authentication authentication){
+        reservationService.registerReview(reservationId, reviewDto, authentication);
+
+        return new ResponseEntity<>(null, HttpStatus.CREATED);
+    }
+
     /*@GetMapping
     public ResponseEntity<Reservation> getReservation(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime){
         if(startTime != null){
@@ -59,27 +71,16 @@ public class ReservationController {
 
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<Void> cancelReservation(@PathVariable long reservationId,
+                                            @RequestParam(required = false) int cancelReason,
                                             Authentication authentication){
-        // 예약 정보 찾기
-        Reservation reservation = reservationService.findReservation(reservationId);
-        // 상담사 쪽에 잡혀있는 예약 정보 없애기
-        reservation.getReservationTimes().forEach(time -> {
-            time.setReservation(null);
-        });
-        // 예약 상태 바꾸기
-        LoginDto.UserType userType = ((CustomAuthenticationToken) authentication).getUserType();
 
-        Reservation.ReservationStatus newStatus;
+        CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
 
-        switch (userType){
-            case MEMBER -> newStatus = Reservation.ReservationStatus.CANCELLED_BY_CLIENT;
-            case COUNSELOR -> newStatus = Reservation.ReservationStatus.CANCELLED_BY_COUNSELOR;
+        switch (auth.getUserType()){
+            case MEMBER -> reservationService.cancelReservationByMember(reservationId);
+            case COUNSELOR -> reservationService.cancelReservationByCounselor(reservationId, cancelReason);
             default -> throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
         }
-        reservation.setReservationStatus(newStatus);
-
-        // 바뀐 상태 저장하고 리턴
-        reservationRepository.save(reservation);
         return ResponseEntity.noContent().build();
     }
 }

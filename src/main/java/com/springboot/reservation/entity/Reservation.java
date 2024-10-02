@@ -18,10 +18,6 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long reservationId;
 
-    /*@ManyToOne
-    @JoinColumn(name = "counselor_id")
-    private Member counselor;*/
-
     private long counselorId;
 
     @ManyToOne
@@ -44,6 +40,14 @@ public class Reservation {
 
     @OneToMany(mappedBy = "reservation")
     private List<AvailableTime> reservationTimes = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "review_id")
+    private Review review;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "report_id")
+    private Report report;
 
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
