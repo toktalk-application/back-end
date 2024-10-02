@@ -6,6 +6,8 @@ import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.member.entity.Member;
+import com.springboot.member.repository.MemberRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,12 @@ public class CounselorService {
     private final CounselorRepository counselorRepository;
     private final CustomAuthorityUtils customAuthorityUtils;
     private final PasswordEncoder passwordEncoder;
+    private final MemberRepository memberRepository;
     public Counselor createCounselor(Counselor counselor){
+        if(!isUserIdAvailable(counselor.getUserId())){
+            throw new BusinessLogicException(ExceptionCode.DUPLICATED_USERID);
+        }
+
         String encryptedPassword = passwordEncoder.encode(counselor.getPassword());
         counselor.setPassword(encryptedPassword);
 
@@ -43,5 +50,10 @@ public class CounselorService {
     private Counselor findVerifiedCounselor(long counselorId){
         Optional<Counselor> optionalCounselor = counselorRepository.findById(counselorId);
         return optionalCounselor.orElseThrow(() -> new BusinessLogicException(ExceptionCode.COUNSELOR_NOT_FOUND));
+    }
+    private boolean isUserIdAvailable(String userId){
+        Optional<Member> optionalMember = memberRepository.findByUserId(userId);
+        Optional<Counselor> optionalCounselor = counselorRepository.findByUserId(userId);
+        return optionalMember.isEmpty() && optionalCounselor.isEmpty();
     }
 }

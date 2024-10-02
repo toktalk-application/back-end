@@ -7,4 +7,5 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+
 }

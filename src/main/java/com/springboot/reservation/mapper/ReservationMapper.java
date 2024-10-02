@@ -6,6 +6,7 @@ import com.springboot.reservation.entity.Reservation;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +24,16 @@ public interface ReservationMapper {
             endTime = endTime.isAfter(time.getEndTime()) ? endTime : time.getEndTime();
         }
 
+        // 예약 취소된 상태면 reservationTimes가 비어 있기 때문에 예외 처리
+        LocalDate date = reservation.getReservationTimes().isEmpty() ? null : reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+
         return new ReservationDto.Response(
                 reservation.getReservationId(),
                 reservation.getCounselorId(),
                 reservation.getComment(),
                 reservation.getType(),
-                reservation.getReservationTimes().get(0).getAvailableDate().getDate(),
+                reservation.getReservationStatus(),
+                date,
                 startTime,
                 endTime
         );
