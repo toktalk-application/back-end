@@ -1,5 +1,7 @@
 package com.springboot.reservation.controller;
 
+import com.springboot.auth.CustomAuthenticationToken;
+import com.springboot.auth.dto.LoginDto;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
@@ -8,16 +10,16 @@ import com.springboot.member.service.MemberService;
 import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.mapper.ReservationMapper;
+import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.reservation.service.ReservationService;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/reservations")
@@ -26,6 +28,7 @@ public class ReservationController {
     private final String DEFAULT_URL = "/reservations";
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
+    private final ReservationRepository reservationRepository;
     private final MemberService memberService;
     private final CounselorService counselorService;
     @PostMapping
@@ -53,4 +56,30 @@ public class ReservationController {
         }
         throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
     }*/
+
+    @DeleteMapping("/{reservationId}")
+    public ResponseEntity<Void> cancelReservation(@PathVariable long reservationId,
+                                            Authentication authentication){
+        // 예약 정보 찾기
+        Reservation reservation = reservationService.findReservation(reservationId);
+        // 상담사 쪽에 잡혀있는 예약 정보 없애기
+        reservation.getReservationTimes().forEach(time -> {
+            time.setReservation(null);
+        });
+        // 예약 상태 바꾸기
+        LoginDto.UserType userType = ((CustomAuthenticationToken) authentication).getUserType();
+
+        Reservation.ReservationStatus newStatus;
+
+        switch (userType){
+            case MEMBER -> newStatus = Reservation.ReservationStatus.CANCELLED_BY_CLIENT;
+            case COUNSELOR -> newStatus = Reservation.ReservationStatus.CANCELLED_BY_COUNSELOR;
+            default -> throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+        }
+        reservation.setReservationStatus(newStatus);
+
+        // 바뀐 상태 저장하고 리턴
+        reservationRepository.save(reservation);
+        return ResponseEntity.noContent().build();
+    }
 }
