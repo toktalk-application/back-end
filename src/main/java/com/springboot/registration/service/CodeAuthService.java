@@ -26,7 +26,7 @@ public class CodeAuthService {
 
     // 액세스 토큰을 얻기 위한 메서드
     public String getAccessToken() {
-        String tokenUrl = "http://oauth.codef.io/oauth/token";
+        String tokenUrl = "https://oauth.codef.io/oauth/token";
 
         // 요청 본문의 형식을 지정 : 폼 데이터 형식
         HttpHeaders headers = new HttpHeaders();
