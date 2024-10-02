@@ -2,6 +2,7 @@ package com.springboot.reservation.controller;
 
 import com.springboot.auth.CustomAuthenticationToken;
 import com.springboot.auth.dto.LoginDto;
+import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
@@ -33,6 +34,8 @@ public class ReservationController {
     private final ReservationMapper reservationMapper;
     private final MemberService memberService;
     private final CounselorService counselorService;
+
+    // 상담 예약 등록
     @PostMapping
     public ResponseEntity<?> postReservation(@RequestBody ReservationDto.Post postDto){
         Reservation tempReservation = reservationMapper.reservationPostDtoToReservation(postDto);
@@ -41,8 +44,11 @@ public class ReservationController {
         Member member = memberService.findMember(postDto.getMemberId());
         tempReservation.setMember(member);
 
-        // 상담사는 있는지만 검사(없으면 예외 발생)
-        counselorService.findCounselor(postDto.getCounselorId());
+        // 상담사 있는지 검사(없으면 예외 발생)
+        Counselor counselor = counselorService.findCounselor(postDto.getCounselorId());
+
+        // 상담사는 자격 인증이 완료되어 있고 활동 상태여야 함
+        if(counselor.getCounselorStatus() != Counselor.CounselorStatus.ACTIVE) throw new BusinessLogicException(ExceptionCode.INVALID_COUNSELOR);
 
         Reservation reservation = reservationService.createReservation(tempReservation, postDto.getDate(), postDto.getStartTimes());
 

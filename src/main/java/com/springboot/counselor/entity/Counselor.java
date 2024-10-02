@@ -61,6 +61,12 @@ public class Counselor {
     @Column
     private int callPrice = 50000;
 
+    @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Career> careers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<License> licenses = new ArrayList<>();
+
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -83,5 +89,18 @@ public class Counselor {
 
     public AvailableDate getAvailableDate(LocalDate date){
         return availableDates.get(date);
+    }
+
+    public void addCareer(Career career){
+        careers.add(career);
+        if(career.getCounselor() == null){
+            career.setCounselor(this);
+        }
+    }
+    public void addLicense(License license){
+        licenses.add(license);
+        if(license.getCounselor() == null){
+            license.setCounselor(this);
+        }
     }
 }
