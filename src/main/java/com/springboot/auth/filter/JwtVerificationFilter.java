@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.SignatureException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,18 +59,22 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         List<GrantedAuthority> authorityList = authorityUtils.createAuthorities((List)claims.get("roles"));
 
         LoginDto.UserType userType;
+        Map<String, String> credentials = new HashMap<>();
         switch ((String) claims.get("usertype")){
             case "MEMBER":
                 userType = LoginDto.UserType.MEMBER;
+                credentials.put("memberId", String.valueOf(claims.get("memberId")));
                 break;
             case "COUNSELOR":
                 userType = LoginDto.UserType.COUNSELOR;
+                credentials.put("counselorId", String.valueOf(claims.get("counselorId")));
                 break;
             default:
                 userType = null;
         }
+        credentials.put("userId", (String) claims.get("userId"));
         /*Authentication authentication = new UsernamePasswordAuthenticationToken(username,null,authorityList);*/
-        Authentication authentication = new CustomAuthenticationToken(username,null, authorityList, userType);
+        Authentication authentication = new CustomAuthenticationToken(username, credentials, authorityList, userType);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

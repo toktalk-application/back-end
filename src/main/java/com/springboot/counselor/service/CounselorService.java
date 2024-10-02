@@ -51,6 +51,29 @@ public class CounselorService {
         Optional<Counselor> optionalCounselor = counselorRepository.findById(counselorId);
         return optionalCounselor.orElseThrow(() -> new BusinessLogicException(ExceptionCode.COUNSELOR_NOT_FOUND));
     }
+
+    public Counselor updateCounselor(Counselor counselor){
+        Counselor realCounselor = findVerifiedCounselor(counselor.getCounselorId());
+
+        Optional.ofNullable(counselor.getPassword())
+                .ifPresent(password -> {
+                    // 같은 비밀번호로 변경 안 됨
+                    if(passwordEncoder.matches(password, realCounselor.getPassword())) throw new BusinessLogicException(ExceptionCode.SAME_PASSWORD);
+                    realCounselor.setPassword(passwordEncoder.encode(password));
+                });
+        Optional.ofNullable(counselor.getPhone())
+                .ifPresent(phone -> counselor.setPhone(phone));
+        Optional.ofNullable(counselor.getCompany())
+                .ifPresent(company -> counselor.setCompany(company));
+        Optional.ofNullable(counselor.getName())
+                .ifPresent(name -> counselor.setName(name));
+        Optional.ofNullable(counselor.getChatPrice())
+                .ifPresent(chatprice -> counselor.setChatPrice(chatprice));
+        Optional.ofNullable(counselor.getCallPrice())
+                .ifPresent(callprice -> counselor.setCallPrice(callprice));
+
+        return counselorRepository.save(realCounselor);
+    }
     private boolean isUserIdAvailable(String userId){
         Optional<Member> optionalMember = memberRepository.findByUserId(userId);
         Optional<Counselor> optionalCounselor = counselorRepository.findByUserId(userId);
