@@ -7,7 +7,10 @@ import lombok.Getter;
 public enum ExceptionCode {
     PARAM_NOT_FOUND(400, "At least 1 of valid params required"),
     DISCONTINUOUS_TIME(400, "Reservation times are discontinuous"),
+    INVALID_CANCLE_REASON(400, "Invalid cancel reason"),
     INVALID_USERTYPE(403, "Invalid usertype"),
+    UNMATCHED_MEMBER(403, "Member id is not match"),
+    UNCOMPLETE_COUNSELING(404, "Counseling not finished"),
     MEMBER_NOT_FOUND(404, "Member not found"),
     COUNSELOR_NOT_FOUND(404, "Counselor not found"),
     RESERVATION_NOT_FOUND(404, "Reservation not found"),
@@ -17,6 +20,8 @@ public enum ExceptionCode {
     DUPLICATED_NICKNAME(409, "Duplicated nickname"),
     SAME_PASSWORD(409, "The new password cannot be the same as the current one"),
     RESERVATION_TIMESLOT_OCCUPIED(409, "Already occupied timeslot"),
+    REVIEW_EXIST(409, "Review already exists"),
+    CREDENTIAL_NOT_FOUND(500, "Some credential field not found")
     ;
     @Getter
     private int status;
