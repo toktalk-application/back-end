@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public interface MemberMapper {
     Member memberPostDtoToMember(MemberDto.Post postDto);
 
+    Member memberPatchDtoToMember(MemberDto.Patch patchDto);
+
     @Mapping(source = "reservations", target = "reservations")
     MemberDto.Response memberToMemberResponseDto(Member member);
 }

@@ -59,7 +59,7 @@ public class Counselor {
     private int chatPrice = 30000;
 
     @Column
-    private int call_price = 50000;
+    private int callPrice = 50000;
 
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -25,6 +25,14 @@ public class MemberDto {
         private String ci;
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class Patch{
+        private String password;
+    }
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter

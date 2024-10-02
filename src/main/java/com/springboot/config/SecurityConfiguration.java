@@ -52,8 +52,8 @@ public class SecurityConfiguration {
                 .authenticationProvider(customAuthenticationProvider) // 커스텀 authenticationProvider 적용
                 .authorizeHttpRequests(authorize -> authorize
                         .antMatchers(HttpMethod.POST,"/members").permitAll()
-                        .antMatchers(HttpMethod.PATCH,"/members/**").hasRole("ADMIN")
-                        .antMatchers(HttpMethod.GET,"/members").hasRole("ADMIN")
+                        .antMatchers(HttpMethod.PATCH,"/members/**").hasAnyRole("USER","ADMIN")
+                        .antMatchers(HttpMethod.GET,"/members").hasAnyRole("USER", "ADMIN")
                         .antMatchers(HttpMethod.GET,"/members/**").hasAnyRole("USER","ADMIN")
                         .antMatchers(HttpMethod.DELETE,"/members/**").hasRole("USER")
                         .antMatchers(HttpMethod.POST, "/answers/**").hasRole("ADMIN")

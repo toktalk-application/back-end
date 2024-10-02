@@ -14,6 +14,7 @@ public enum ExceptionCode {
     UNAVAILABLE_TIME(404, "Reservation time is not available"),
     DUPLICATED_USERID(409, "Duplicated userid"),
     DUPLICATED_NICKNAME(409, "Duplicated nickname"),
+    SAME_PASSWORD(409, "The new password cannot be the same as the current one"),
     RESERVATION_TIMESLOT_OCCUPIED(409, "Already occupied timeslot"),
     ;
     @Getter
