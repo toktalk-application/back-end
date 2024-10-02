@@ -1,9 +1,7 @@
 package com.springboot.counselor.mapper;
 
 import com.springboot.counselor.available_date.AvailableDate;
-import com.springboot.counselor.dto.AvailableDateDto;
-import com.springboot.counselor.dto.AvailableTimeDto;
-import com.springboot.counselor.dto.CounselorDto;
+import com.springboot.counselor.dto.*;
 import com.springboot.counselor.entity.Counselor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,6 +17,23 @@ public interface CounselorMapper {
     Counselor counselorPatchDtoToCounselor(CounselorDto.Patch patchDto);
     default CounselorDto.Response counselorToCounselorResponseDto(Counselor counselor){
         List<AvailableDate> availableDateList = new ArrayList<>(counselor.getAvailableDates().values());
+
+        // 자격증 -> 자격증 dto 변환
+        List<LicenseDto> licenseDtos = counselor.getLicenses().stream()
+                .map(license -> new LicenseDto(
+                        license.getLicenseId(),
+                        license.getLicenseName(),
+                        license.getOrganization(),
+                        license.getIssueDate()
+                )).toList();
+        // 경력 -> 경력 dto 변환
+        List<CareerDto> careerDtos = counselor.getCareers().stream()
+                .map(career -> new CareerDto(
+                        career.getCareerId(),
+                        career.getClassification(),
+                        career.getCompany(),
+                        career.getResponsibility()
+                )).toList();
 
         return new CounselorDto.Response(
                 counselor.getCounselorId(),
@@ -43,6 +58,8 @@ public interface CounselorMapper {
                         .collect(Collectors.toList()),
                 counselor.getChatPrice(),
                 counselor.getCallPrice(),
+                careerDtos,
+                licenseDtos,
                 counselor.getCreatedAt(),
                 counselor.getModifiedAt()
         );

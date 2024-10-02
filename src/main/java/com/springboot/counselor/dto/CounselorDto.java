@@ -1,7 +1,9 @@
 package com.springboot.counselor.dto;
 
 import com.springboot.counselor.available_date.AvailableDate;
+import com.springboot.counselor.entity.Career;
 import com.springboot.counselor.entity.Counselor;
+import com.springboot.counselor.entity.License;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.gender.Gender;
 import lombok.AllArgsConstructor;
@@ -27,6 +29,8 @@ public class CounselorDto {
         private String ci;
         private String name;
         private String company;
+        private List<License> licenses;
+        private List<Career> careers;
     }
 
     @AllArgsConstructor
@@ -57,6 +61,8 @@ public class CounselorDto {
         private List<AvailableDateDto> availableDates;
         private int chatPrice;
         private int callPrice;
+        private List<CareerDto> careers;
+        private List<LicenseDto> licenses;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
     }

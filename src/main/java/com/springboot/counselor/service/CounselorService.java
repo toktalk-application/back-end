@@ -2,7 +2,9 @@ package com.springboot.counselor.service;
 
 import com.springboot.auth.utils.CustomAuthorityUtils;
 import com.springboot.counselor.available_date.AvailableDate;
+import com.springboot.counselor.dto.CounselorDto;
 import com.springboot.counselor.entity.Counselor;
+import com.springboot.counselor.entity.License;
 import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
@@ -25,16 +27,32 @@ public class CounselorService {
     private final CustomAuthorityUtils customAuthorityUtils;
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
-    public Counselor createCounselor(Counselor counselor){
-        if(!isUserIdAvailable(counselor.getUserId())){
-            throw new BusinessLogicException(ExceptionCode.DUPLICATED_USERID);
-        }
+    public Counselor createCounselor(Counselor counselor, CounselorDto.Post postDto){
+        // 자격증, 경력사항은 최소 하나 ~ 최대 3개
+        int licenceSize = postDto.getLicenses() == null ? 0 : postDto.getLicenses().size();
+        if(licenceSize == 0 || licenceSize > 3) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
+        int careerSize = postDto.getCareers() == null ? 0 : postDto.getCareers().size();
+        if(careerSize == 0 || careerSize > 3) throw new BusinessLogicException(ExceptionCode.CAREER_AMOUNT_VIOLATION);
+
+        // 아이디 중복 검사
+        if(!isUserIdAvailable(counselor.getUserId()))throw new BusinessLogicException(ExceptionCode.DUPLICATED_USERID);
 
         String encryptedPassword = passwordEncoder.encode(counselor.getPassword());
         counselor.setPassword(encryptedPassword);
 
         List<String> roles = customAuthorityUtils.createRoles(counselor.getUserId());
         counselor.setRoles(roles);
+
+        // 자격증 등록
+        counselor.getLicenses().clear(); // dto와 mapper 때문에 생긴 거 지우기
+        postDto.getLicenses().forEach(license -> {
+            counselor.addLicense(license);
+        });
+        // 경력사항 등록
+        counselor.getCareers().clear(); // dto와 mapper 때문에 생긴 거 지우기
+        postDto.getCareers().forEach(career -> {
+            counselor.addCareer(career);
+        });
 
         // 앞으로 30일 간 예약가능일자 생성
         for(int i = 0; i< 30; i++){
