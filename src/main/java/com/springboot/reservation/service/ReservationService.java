@@ -7,6 +7,7 @@ import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.reservation.dto.ReservationDto;
+import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.repository.ReservationRepository;
@@ -49,7 +50,7 @@ public class ReservationService {
         if(auth.getUserType() != LoginDto.UserType.MEMBER) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
 
         // 진짜로 상담 받은 회원인지 검사
-        Reservation reservation = findReservation(reservationId);
+        Reservation reservation = findVerifiedReservation(reservationId);
         long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
 
         // 다른 놈인데?
@@ -66,6 +67,31 @@ public class ReservationService {
         review.setContent(reviewDto.getContent());
         review.setRating(reviewDto.getRating());
         reservation.setReview(review);
+        reservationRepository.save(reservation);
+    }
+    // 상담사 진단 등록
+    public void registerReport(long reservationId, ReservationDto.Report reportDto, Authentication authentication){
+        // Counselor만 진단 등록 가능
+        CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
+        if(auth.getUserType() != LoginDto.UserType.COUNSELOR) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        // 진짜로 상담했던 상담사인지 검사
+        Reservation reservation = findVerifiedReservation(reservationId);
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+
+        // 다른 놈인데?
+        if(reservation.getCounselorId() != counselorId) throw new BusinessLogicException(ExceptionCode.UNMATCHED_COUNSELOR);
+
+        // 상담이 끝난 상태여야만 진단 가능
+        if(reservation.getReservationStatus() != Reservation.ReservationStatus.COMPLETED) throw new BusinessLogicException(ExceptionCode.UNCOMPLETE_COUNSELING);
+
+        // 이미 진단이 있어도 안됨
+        if(reservation.getReport() != null) throw new BusinessLogicException(ExceptionCode.REPORT_EXIST);
+
+        // 문제 없으면 진단 등록
+        Report report = new Report();
+        report.setContent(reportDto.getContent());
+        reservation.setReport(report);
         reservationRepository.save(reservation);
     }
 

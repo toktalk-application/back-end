@@ -10,6 +10,7 @@ public enum ExceptionCode {
     INVALID_CANCLE_REASON(400, "Invalid cancel reason"),
     INVALID_USERTYPE(403, "Invalid usertype"),
     UNMATCHED_MEMBER(403, "Member id is not match"),
+    UNMATCHED_COUNSELOR(403, "Counselor id is not match"),
     UNCOMPLETE_COUNSELING(404, "Counseling not finished"),
     MEMBER_NOT_FOUND(404, "Member not found"),
     COUNSELOR_NOT_FOUND(404, "Counselor not found"),
@@ -21,6 +22,7 @@ public enum ExceptionCode {
     SAME_PASSWORD(409, "The new password cannot be the same as the current one"),
     RESERVATION_TIMESLOT_OCCUPIED(409, "Already occupied timeslot"),
     REVIEW_EXIST(409, "Review already exists"),
+    REPORT_EXIST(409, "Report already exists"),
     CREDENTIAL_NOT_FOUND(500, "Some credential field not found")
     ;
     @Getter

@@ -51,5 +51,15 @@ public class ReservationDto {
     public static class Review{
         private String content;
         private int rating;
+        private LocalDateTime createdAt;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Report{
+        private String content;
+        private LocalDateTime createdAt;
     }
 }
