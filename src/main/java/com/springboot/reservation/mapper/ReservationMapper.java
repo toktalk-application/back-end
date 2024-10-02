@@ -2,6 +2,7 @@ package com.springboot.reservation.mapper;
 
 import com.springboot.counselor.available_date.AvailableTime;
 import com.springboot.reservation.dto.ReservationDto;
+import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.entity.Review;
 import org.mapstruct.Mapper;
@@ -32,7 +33,13 @@ public interface ReservationMapper {
         ReservationDto.Review reviewDto = null;
         if(reservation.getReview() != null){
             Review review = reservation.getReview();
-            reviewDto = new ReservationDto.Review(review.getContent(), review.getRating());
+            reviewDto = new ReservationDto.Review(review.getContent(), review.getRating(), review.getCreatedAt());
+        }
+        // 진단 dto로 변환
+        ReservationDto.Report reportDto = null;
+        if(reservation.getReport() != null){
+            Report report = reservation.getReport();
+            reportDto = new ReservationDto.Report(report.getContent(), report.getCreatedAt());
         }
 
         return new ReservationDto.Response(
@@ -45,7 +52,7 @@ public interface ReservationMapper {
                 startTime,
                 endTime,
                 reviewDto,
-                reservation.getReport()
+                reportDto
         );
     };
     default List<ReservationDto.Response> reservationsToReservationResponseDtos(List<Reservation> reservations){

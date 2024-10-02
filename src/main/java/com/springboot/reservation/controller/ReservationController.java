@@ -60,14 +60,15 @@ public class ReservationController {
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
-    /*@GetMapping
-    public ResponseEntity<Reservation> getReservation(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime){
-        if(startTime != null){
-            Reservation reservation = reservationService.getReservation(startTime);
-            return new ResponseEntity<>(reservation, HttpStatus.OK);
-        }
-        throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
-    }*/
+    // 상담사 진단 등록
+    @PostMapping("/{reservationId}/reports")
+    public ResponseEntity<?> postReport(@PathVariable long reservationId,
+                                        @RequestBody ReservationDto.Report reportDto,
+                                        Authentication authentication
+                                        ){
+        reservationService.registerReport(reservationId, reportDto, authentication);
+        return new ResponseEntity<>(null, HttpStatus.CREATED);
+    }
 
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<Void> cancelReservation(@PathVariable long reservationId,
