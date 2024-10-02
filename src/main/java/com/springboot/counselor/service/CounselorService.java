@@ -3,6 +3,8 @@ package com.springboot.counselor.service;
 import com.springboot.auth.utils.CustomAuthorityUtils;
 import com.springboot.counselor.available_date.AvailableDate;
 import com.springboot.counselor.dto.CounselorDto;
+import com.springboot.counselor.dto.LicenseDto;
+import com.springboot.counselor.entity.Career;
 import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.entity.License;
 import com.springboot.counselor.repository.CounselorRepository;
@@ -10,6 +12,7 @@ import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.member.entity.Member;
 import com.springboot.member.repository.MemberRepository;
+import com.springboot.utils.IntValidationUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -62,6 +65,34 @@ public class CounselorService {
 
         return counselorRepository.save(counselor);
     }
+    // 자격증 추가
+    public void addLicense(long counselorId, List<LicenseDto.Post> postDtos){
+        Counselor counselor = findVerifiedCounselor(counselorId);
+        // 이미 3개면 더 추가 안됨
+        if(counselor.getLicenses().size() == 3) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
+
+        // 자격증 등록
+        postDtos.forEach(postDto -> {
+            License license = new License();
+            license.setCounselor(counselor);
+            license.setLicenseName(postDto.getLicenseName());
+            license.setOrganization(postDto.getOrganization());
+            license.setIssueDate(postDto.getIssueDate());
+        });
+    }
+    // 자격증 삭제
+    public void deleteLicense(long counselorId, int licenseNumber){
+        Counselor counselor = findVerifiedCounselor(counselorId);
+        List<License> licenses = counselor.getLicenses();
+
+        // 딱 하나 남아 있는데 삭제할 수 없음
+        if(licenses.size() == 1) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
+
+        // 전달받은 licenseNumber 번째의 자격증 삭제
+        licenses.remove(licenseNumber - 1);
+
+        counselorRepository.save(counselor);
+    }
     public Counselor findCounselor(long counselorId){
         return findVerifiedCounselor(counselorId);
     }
@@ -80,15 +111,15 @@ public class CounselorService {
                     realCounselor.setPassword(passwordEncoder.encode(password));
                 });
         Optional.ofNullable(counselor.getPhone())
-                .ifPresent(phone -> counselor.setPhone(phone));
+                .ifPresent(phone -> realCounselor.setPhone(phone));
         Optional.ofNullable(counselor.getCompany())
-                .ifPresent(company -> counselor.setCompany(company));
+                .ifPresent(company -> realCounselor.setCompany(company));
         Optional.ofNullable(counselor.getName())
-                .ifPresent(name -> counselor.setName(name));
+                .ifPresent(name -> realCounselor.setName(name));
         Optional.ofNullable(counselor.getChatPrice())
-                .ifPresent(chatprice -> counselor.setChatPrice(chatprice));
+                .ifPresent(chatprice -> realCounselor.setChatPrice(chatprice));
         Optional.ofNullable(counselor.getCallPrice())
-                .ifPresent(callprice -> counselor.setCallPrice(callprice));
+                .ifPresent(callprice -> realCounselor.setCallPrice(callprice));
 
         return counselorRepository.save(realCounselor);
     }
