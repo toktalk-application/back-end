@@ -63,7 +63,7 @@ public class CounselorDto {
         private List<AvailableDateDto> availableDates;
         private int chatPrice;
         private int callPrice;
-        private List<CareerDto> careers;
+        private List<CareerDto.Response> careers;
         private List<LicenseDto.Response> licenses;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;

@@ -29,6 +29,8 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final CounselorService counselorService;
     private final ReservationMapper reservationMapper;
+
+    // 상담 예약 등록
     public Reservation createReservation(Reservation reservation, LocalDate date, List<LocalTime> startTimes){
         Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
         // 예약 불가능한 날짜
@@ -135,6 +137,7 @@ public class ReservationService {
         return optionalReservation.orElseThrow(() -> new BusinessLogicException(ExceptionCode.RESERVATION_NOT_FOUND));
     }
 
+    // 예약 취소 (MEMBER)
     public void cancelReservationByMember(long reservationId){
         // 예약 정보 찾기
         Reservation reservation = findReservation(reservationId);
@@ -148,6 +151,8 @@ public class ReservationService {
         // 바뀐 상태 저장하고 리턴
         reservationRepository.save(reservation);
     }
+
+    // 예약 취소 (COUNSELOR)
     public void cancelReservationByCounselor(long reservationId, int cancelReason){
         // 예약 정보 찾기
         Reservation reservation = findReservation(reservationId);
