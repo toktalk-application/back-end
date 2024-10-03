@@ -20,6 +20,8 @@ public enum ExceptionCode {
     RESERVATION_NOT_FOUND(404, "Reservation not found"),
     UNAVAILABLE_DATE(404, "Reservation date is not available"),
     UNAVAILABLE_TIME(404, "Reservation time is not available"),
+    LICENSE_NOT_FOUND(404, "License not found"),
+    CAREER_NOT_FOUND(404, "Career not found"),
     DUPLICATED_USERID(409, "Duplicated userid"),
     DUPLICATED_NICKNAME(409, "Duplicated nickname"),
     SAME_PASSWORD(409, "The new password cannot be the same as the current one"),

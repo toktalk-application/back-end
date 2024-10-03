@@ -27,8 +27,8 @@ public interface CounselorMapper {
                         license.getIssueDate()
                 )).toList();
         // 경력 -> 경력 dto 변환
-        List<CareerDto> careerDtos = counselor.getCareers().stream()
-                .map(career -> new CareerDto(
+        List<CareerDto.Response> careerDtos = counselor.getCareers().stream()
+                .map(career -> new CareerDto.Response(
                         career.getCareerId(),
                         career.getClassification(),
                         career.getCompany(),

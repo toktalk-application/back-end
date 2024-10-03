@@ -6,13 +6,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class CareerDto {
-    private long careerId;
-    private Career.Classification classification;
-    private String company;
-    private String responsibility;
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Post{
+        private Career.Classification classification;
+        private String company;
+        private String responsibility;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Response{
+        private long careerId;
+        private Career.Classification classification;
+        private String company;
+        private String responsibility;
+    }
 }

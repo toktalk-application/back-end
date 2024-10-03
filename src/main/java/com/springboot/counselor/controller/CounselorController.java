@@ -2,6 +2,7 @@ package com.springboot.counselor.controller;
 
 import com.springboot.auth.CustomAuthenticationToken;
 import com.springboot.auth.dto.LoginDto;
+import com.springboot.counselor.dto.CareerDto;
 import com.springboot.counselor.dto.CounselorDto;
 import com.springboot.counselor.dto.LicenseDto;
 import com.springboot.counselor.entity.Counselor;
@@ -74,7 +75,32 @@ public class CounselorController {
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
-    // 특정 상담사에 대한 특정일 또는 월별 예약 목록 조회
+    // 경력사항 추가 등록
+    @PostMapping("/careers")
+    public ResponseEntity<?> postCareers(@RequestBody List<CareerDto.Post> postDtos,
+                                         Authentication authentication){
+        // Counselor만 요청 가능
+        if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        counselorService.addCareer(counselorId, postDtos);
+
+        return new ResponseEntity<>(null, HttpStatus.CREATED);
+    }
+    // 경력사항 삭제
+    @DeleteMapping("/careers")
+    public ResponseEntity<?> deleteCareers(@RequestParam int careerNumber,
+                                            Authentication authentication){
+        // Counselor만 요청 가능
+        if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        counselorService.deleteCareer(counselorId, careerNumber);
+
+        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+    }
+
+    // 특정 상담사에 대한 특정일 또는 월별 예약 정보 조회
     @GetMapping("/{counselorId}/reservations")
     public ResponseEntity<?> getReservations(/*Authentication authentication,*/
                                                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -83,12 +109,12 @@ public class CounselorController {
         // 상담사 찾아오기
         Counselor counselor = counselorService.findCounselor(counselorId);
 
-        if(date != null){
+        if(date != null){ // date 파라미터를 넣었으면 특정일 조회
             List<Reservation> dailyReservations = reservationService.getDailyReservations(counselor, date);
             return new ResponseEntity<>(
                     new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(dailyReservations)), HttpStatus.OK
             );
-        } else if (month != null) {
+        } else if (month != null) { // month 파라미터를 넣었으면 특정월 조회
             Map<LocalDate, Boolean> monthlyReservations = reservationService.getMonthlyReservations(counselor, month);
             return new ResponseEntity<>(
                     new SingleResponseDto<>(monthlyReservations), HttpStatus.OK
@@ -98,7 +124,7 @@ public class CounselorController {
         throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
     }
 
-
+    // 상담사 프로필 수정
     @PatchMapping
     public ResponseEntity<?> patchCounselor(Authentication authentication,
                                             @RequestBody CounselorDto.Patch patchDto){
@@ -119,6 +145,7 @@ public class CounselorController {
         );
     }
 
+    // 단일 상담사 조회
     @GetMapping("/{counselorId}")
     public ResponseEntity<?> getCounselor(@PathVariable long counselorId
                                           /*,Authentication authentication*/){
