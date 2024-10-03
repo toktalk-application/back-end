@@ -12,6 +12,7 @@ import com.springboot.exception.ExceptionCode;
 import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.mapper.ReservationMapper;
+import com.springboot.reservation.service.ReservationService;
 import com.springboot.response.MultiResponseDto;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.response.SingleResponseEntity;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 
 @RestController
@@ -35,6 +37,7 @@ public class CounselorController {
     private final String DEFAULT_URL = "/counselors";
     private final CounselorMapper counselorMapper;
     private final CounselorService counselorService;
+    private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
 
     // 상담사 회원 가입
@@ -71,21 +74,30 @@ public class CounselorController {
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
-    //TODO: 이거 상담사 누구 거 조회할 건지 처리 필요
-    @GetMapping("/reservations")
-    public ResponseEntity<List<ReservationDto.Response>> getReservations(Authentication authentication,
-                                                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate searchDate){
+    // 특정 상담사에 대한 특정일 또는 월별 예약 목록 조회
+    @GetMapping("/{counselorId}/reservations")
+    public ResponseEntity<?> getReservations(/*Authentication authentication,*/
+                                                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                                         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
+                                                                         @PathVariable long counselorId){
+        // 상담사 찾아오기
+        Counselor counselor = counselorService.findCounselor(counselorId);
 
-        Counselor counselor = counselorService.findCounselor(1);
-        Set<Reservation> reservations = new HashSet<>();
-        counselor.getAvailableDate(searchDate).getAvailableTimes().forEach(time -> {
-            if(time.getReservation() != null){
-                reservations.add(time.getReservation());
-            }
-        });
-        List<ReservationDto.Response> result = reservationMapper.reservationsToReservationResponseDtos(reservations.stream().toList());
-        return new SingleResponseEntity<>(result, HttpStatus.OK);
+        if(date != null){
+            List<Reservation> dailyReservations = reservationService.getDailyReservations(counselor, date);
+            return new ResponseEntity<>(
+                    new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(dailyReservations)), HttpStatus.OK
+            );
+        } else if (month != null) {
+            Map<LocalDate, Boolean> monthlyReservations = reservationService.getMonthlyReservations(counselor, month);
+            return new ResponseEntity<>(
+                    new SingleResponseDto<>(monthlyReservations), HttpStatus.OK
+            );
+        }
+        // 쿼리 파라미터를 아무것도 안 넣었을 때
+        throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
     }
+
 
     @PatchMapping
     public ResponseEntity<?> patchCounselor(Authentication authentication,

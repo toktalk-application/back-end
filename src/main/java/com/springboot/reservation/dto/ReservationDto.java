@@ -19,7 +19,6 @@ public class ReservationDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Post{
-        private long memberId;
         private long counselorId;
         private String comment;
         private Reservation.CounselingType type;

@@ -74,4 +74,16 @@ public class AvailableDate {
             validateReservationTime(reservation, reservationTime);
         }
     }
+
+    // 이 날짜에 잡힌 예약이 하나라도 있는지
+    public boolean isReservedDate(){
+        boolean isReserved = false;
+        for(AvailableTime time : availableTimes){
+            if(time.getReservation() != null) {
+                isReserved = true;
+                break;
+            }
+        }
+        return isReserved;
+    }
 }
