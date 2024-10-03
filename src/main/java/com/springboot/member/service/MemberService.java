@@ -1,8 +1,6 @@
 package com.springboot.member.service;
 
 
-import com.springboot.auth.CustomAuthenticationToken;
-import com.springboot.auth.dto.LoginDto;
 import com.springboot.auth.utils.CustomAuthorityUtils;
 import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.repository.CounselorRepository;
@@ -11,13 +9,8 @@ import com.springboot.exception.ExceptionCode;
 import com.springboot.member.dto.MemberDto;
 import com.springboot.member.entity.Member;
 import com.springboot.member.repository.MemberRepository;
-import com.springboot.reservation.dto.ReservationDto;
-import com.springboot.reservation.entity.Reservation;
-import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.service.ReservationService;
-import com.springboot.utils.CredentialUtil;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,7 +78,7 @@ public class MemberService {
 
     public void quitMember(long memberId){
         Member member = findVerifiedMember(memberId);
-        member.setMemberStatus(Member.MemberStatus.INACTIVE);
+        member.setMemberStatus(Member.Status.INACTIVE);
 
         memberRepository.save(member);
     }

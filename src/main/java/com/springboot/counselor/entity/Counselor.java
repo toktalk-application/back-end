@@ -37,7 +37,7 @@ public class Counselor {
     private Gender gender;
 
     @Enumerated(EnumType.STRING)
-    private CounselorStatus counselorStatus = CounselorStatus.VERIFICATION_WAITING;
+    private Status counselorStatus = Status.VERIFICATION_WAITING;
 
     @Column
     private String ci;
@@ -69,14 +69,16 @@ public class Counselor {
     @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<License> licenses = new ArrayList<>();
 
+    @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Keyword> keywords = new ArrayList<>();
+
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column
     private LocalDateTime modifiedAt = LocalDateTime.now();
 
-    @AllArgsConstructor
-    public enum CounselorStatus{
+    public enum Status {
         VERIFICATION_WAITING,
         ACTIVE,
         INACTIVE
@@ -102,6 +104,14 @@ public class Counselor {
             license.setCounselor(this);
         }
     }
+
+    public void addKeyword(Keyword keyword){
+        keywords.add(keyword);
+        if(keyword.getCounselor() == null){
+            keyword.setCounselor(this);
+        }
+    }
+
     // 날짜를 통해 상담사가 가진 AvailableDate객체 반환
     public AvailableDate getAvailableDate(LocalDate date){
         AvailableDate availableDate = availableDates.get(date);

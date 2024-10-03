@@ -1,10 +1,8 @@
 package com.springboot.counselor.dto;
 
-import com.springboot.counselor.available_date.AvailableDate;
 import com.springboot.counselor.entity.Career;
 import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.entity.License;
-import com.springboot.counselor.service.CounselorService;
 import com.springboot.gender.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -56,7 +54,7 @@ public class CounselorDto {
         private long counselorId;
         private LocalDate birth;
         private Gender gender;
-        private Counselor.CounselorStatus counselorStatus;
+        private Counselor.Status counselorStatus;
         private String name;
         private String userId;
         private String company;
