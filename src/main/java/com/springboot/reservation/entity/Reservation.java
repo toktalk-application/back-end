@@ -2,11 +2,13 @@ package com.springboot.reservation.entity;
 
 import com.springboot.counselor.available_date.AvailableTime;
 import com.springboot.member.entity.Member;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +20,11 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long reservationId;
 
+    @Column
     private long counselorId;
+
+    @Column
+    private String counselorName;
 
     @ManyToOne
     @JoinColumn(name = "member_id")
@@ -73,5 +79,23 @@ public class Reservation {
         if(!member.getReservations().contains(this)){
             member.addReservation(this);
         }
+    }
+    public TimePeriod getReservationTimePeriod(){
+        LocalTime startTime = LocalTime.MAX;
+        LocalTime endTime = LocalTime.MIN;
+
+        // startTime중 가장 이른 시점과 endTime중 가장 나중 시점을 뽑기
+        for(AvailableTime time : reservationTimes){
+            startTime = startTime.isBefore(time.getStartTime()) ? startTime : time.getStartTime();
+            endTime = endTime.isAfter(time.getEndTime()) ? endTime : time.getEndTime();
+        }
+        return new TimePeriod(startTime, endTime);
+    }
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public class TimePeriod{
+        private LocalTime startTime;
+        private LocalTime endTime;
     }
 }

@@ -18,9 +18,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.util.*;
 
 @Service
@@ -141,6 +139,12 @@ public class ReservationService {
     public void cancelReservationByMember(long reservationId){
         // 예약 정보 찾기
         Reservation reservation = findReservation(reservationId);
+        // 취소는 최소 24시간 전
+        LocalTime startTime = reservation.getReservationTimePeriod().getStartTime();
+        LocalDate reservationDate = reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+        LocalDateTime startDateTime = LocalDateTime.of(reservationDate, startTime);
+        Duration duration = Duration.between(LocalDateTime.now(), startDateTime);
+        if(duration.toHours() < 24) throw new BusinessLogicException(ExceptionCode.CANCELLATION_TOO_LATE);
         // 상담사 밑으로 잡혀있는 예약 정보 없애기
         reservation.getReservationTimes().forEach(time -> {
             time.setReservation(null);
@@ -156,6 +160,12 @@ public class ReservationService {
     public void cancelReservationByCounselor(long reservationId, int cancelReason){
         // 예약 정보 찾기
         Reservation reservation = findReservation(reservationId);
+        // 취소는 최소 24시간 전
+        LocalTime startTime = reservation.getReservationTimePeriod().getStartTime();
+        LocalDate reservationDate = reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+        LocalDateTime startDateTime = LocalDateTime.of(reservationDate, startTime);
+        Duration duration = Duration.between(LocalDateTime.now(), startDateTime);
+        if(duration.toHours() < 24) throw new BusinessLogicException(ExceptionCode.CANCELLATION_TOO_LATE);
         // 상담사 밑으로 잡혀있는 예약 정보 없애기
         reservation.getReservationTimes().forEach(time -> {
             time.setReservation(null);
