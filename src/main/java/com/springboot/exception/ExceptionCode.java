@@ -14,6 +14,7 @@ public enum ExceptionCode {
     UNMATCHED_MEMBER(403, "Member id is not match"),
     UNMATCHED_COUNSELOR(403, "Counselor id is not match"),
     INVALID_COUNSELOR(403, "Invalid counselor"),
+    CANCELLATION_TOO_LATE(403, "Cancellation must be made at least 24 hours in advance"),
     UNCOMPLETE_COUNSELING(404, "Counseling not finished"),
     MEMBER_NOT_FOUND(404, "Member not found"),
     COUNSELOR_NOT_FOUND(404, "Counselor not found"),
