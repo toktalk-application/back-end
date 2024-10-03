@@ -45,4 +45,11 @@ public class MemberDto {
         private Gender gender;
         private List<ReservationDto.Response> reservations;
     }
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class Test{
+        private List<Integer> answers;
+    }
 }
