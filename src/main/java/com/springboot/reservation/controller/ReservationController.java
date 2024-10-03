@@ -37,18 +37,22 @@ public class ReservationController {
 
     // 상담 예약 등록
     @PostMapping
-    public ResponseEntity<?> postReservation(@RequestBody ReservationDto.Post postDto){
+    public ResponseEntity<?> postReservation(Authentication authentication,
+            @RequestBody ReservationDto.Post postDto){
         Reservation tempReservation = reservationMapper.reservationPostDtoToReservation(postDto);
 
+        // Member가 아니면 예약 불가
+        if(CredentialUtil.getUserType(authentication) != LoginDto.UserType.MEMBER) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
         // 멤버 찾아서 넣기
-        Member member = memberService.findMember(postDto.getMemberId());
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication,"memberId"));
+        Member member = memberService.findMember(memberId);
         tempReservation.setMember(member);
 
         // 상담사 있는지 검사(없으면 예외 발생)
         Counselor counselor = counselorService.findCounselor(postDto.getCounselorId());
 
         // 상담사는 자격 인증이 완료되어 있고 활동 상태여야 함
-        if(counselor.getCounselorStatus() != Counselor.CounselorStatus.ACTIVE) throw new BusinessLogicException(ExceptionCode.INVALID_COUNSELOR);
+        /*if(counselor.getCounselorStatus() != Counselor.CounselorStatus.ACTIVE) throw new BusinessLogicException(ExceptionCode.INVALID_COUNSELOR);*/
 
         Reservation reservation = reservationService.createReservation(tempReservation, postDto.getDate(), postDto.getStartTimes());
 
@@ -76,6 +80,7 @@ public class ReservationController {
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
+    // 예약 취소 (회원, 상담사 모두 가능)
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<Void> cancelReservation(@PathVariable long reservationId,
                                             @RequestParam(required = false) int cancelReason,
