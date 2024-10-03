@@ -14,9 +14,11 @@ import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.reservation.service.ReservationService;
+import com.springboot.response.SingleResponseDto;
 import com.springboot.utils.CredentialUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -50,6 +52,7 @@ public class ReservationController {
 
         // 상담사 있는지 검사(없으면 예외 발생)
         Counselor counselor = counselorService.findCounselor(postDto.getCounselorId());
+        tempReservation.setCounselorName(counselor.getName());
 
         // 상담사는 자격 인증이 완료되어 있고 활동 상태여야 함
         /*if(counselor.getCounselorStatus() != Counselor.CounselorStatus.ACTIVE) throw new BusinessLogicException(ExceptionCode.INVALID_COUNSELOR);*/
@@ -58,6 +61,17 @@ public class ReservationController {
 
         URI location = UriCreator.createUri(DEFAULT_URL, reservation.getReservationId());
         return ResponseEntity.created(location).build();
+    }
+
+    // 단일 상담 조회
+    @GetMapping("/{reservationId}")
+    public ResponseEntity<?> getReservation(/*Authentication authentication,*/
+                                            @PathVariable long reservationId){
+        Reservation reservation = reservationService.findReservation(reservationId);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(reservationMapper.reservationToReservationResponseDto(reservation)), HttpStatus.OK
+        );
     }
 
     // 리뷰 등록
@@ -82,10 +96,9 @@ public class ReservationController {
 
     // 예약 취소 (회원, 상담사 모두 가능)
     @DeleteMapping("/{reservationId}")
-    public ResponseEntity<Void> cancelReservation(@PathVariable long reservationId,
-                                            @RequestParam(required = false) int cancelReason,
+    public ResponseEntity<?> cancelReservation(@PathVariable long reservationId,
+                                            @RequestParam(required = false) Integer cancelReason,
                                             Authentication authentication){
-
         CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
 
         switch (auth.getUserType()){

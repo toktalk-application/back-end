@@ -33,12 +33,14 @@ public class ReservationDto {
     public static class Response{
         private long reservationId;
         private long counselorId;
+        private String memberNickname;
+        private String counselorName;
         private String comment;
         private Reservation.CounselingType type;
         private Reservation.ReservationStatus status;
         private LocalDate date;
-        private LocalTime startTime;
-        private LocalTime endTime;
+        private String startTime;
+        private String endTime;
         private Review review;
         private Report report;
     }

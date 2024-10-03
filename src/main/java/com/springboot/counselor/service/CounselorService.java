@@ -7,6 +7,7 @@ import com.springboot.counselor.dto.CounselorDto;
 import com.springboot.counselor.dto.LicenseDto;
 import com.springboot.counselor.entity.Career;
 import com.springboot.counselor.entity.Counselor;
+import com.springboot.counselor.entity.Keyword;
 import com.springboot.counselor.entity.License;
 import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.exception.BusinessLogicException;
@@ -113,6 +114,18 @@ public class CounselorService {
         });
         counselor.setModifiedAt(LocalDateTime.now());
     }
+
+    // 상담사 태그 추가
+    public void addKeyword(long counselorId, String word){
+        Counselor counselor = findVerifiedCounselor(counselorId);
+
+        Keyword keyword = new Keyword();
+        keyword.setWord(word);
+        keyword.setCounselor(counselor);
+
+        counselorRepository.save(counselor);
+    }
+
     // 경력사항 삭제
     public void deleteCareer(long counselorId, int careerNumber){
         Counselor counselor = findVerifiedCounselor(counselorId);
