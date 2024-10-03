@@ -2,6 +2,7 @@ package com.springboot.counselor.service;
 
 import com.springboot.auth.utils.CustomAuthorityUtils;
 import com.springboot.counselor.available_date.AvailableDate;
+import com.springboot.counselor.dto.CareerDto;
 import com.springboot.counselor.dto.CounselorDto;
 import com.springboot.counselor.dto.LicenseDto;
 import com.springboot.counselor.entity.Career;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,14 +64,13 @@ public class CounselorService {
             AvailableDate newDate = new AvailableDate(LocalDate.now().plusDays(i));
             counselor.addAvailableDate(newDate);
         }
-
         return counselorRepository.save(counselor);
     }
     // 자격증 추가
     public void addLicense(long counselorId, List<LicenseDto.Post> postDtos){
         Counselor counselor = findVerifiedCounselor(counselorId);
-        // 이미 3개면 더 추가 안됨
-        if(counselor.getLicenses().size() == 3) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
+        // 3개 넘개는 추가 안됨
+        if(counselor.getLicenses().size() + postDtos.size() > 3) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
 
         // 자격증 등록
         postDtos.forEach(postDto -> {
@@ -79,6 +80,7 @@ public class CounselorService {
             license.setOrganization(postDto.getOrganization());
             license.setIssueDate(postDto.getIssueDate());
         });
+        counselor.setModifiedAt(LocalDateTime.now());
     }
     // 자격증 삭제
     public void deleteLicense(long counselorId, int licenseNumber){
@@ -89,9 +91,42 @@ public class CounselorService {
         if(licenses.size() == 1) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
 
         // 전달받은 licenseNumber 번째의 자격증 삭제
+        if(!IntValidationUtil.isIntInRange(licenseNumber, 1, licenses.size())) throw new BusinessLogicException(ExceptionCode.LICENSE_NOT_FOUND);
         licenses.remove(licenseNumber - 1);
 
+        counselor.setModifiedAt(LocalDateTime.now());
         counselorRepository.save(counselor);
+    }
+    // 경력사항 추가
+    public void addCareer(long counselorId, List<CareerDto.Post> postDtos){
+        Counselor counselor = findVerifiedCounselor(counselorId);
+        // 3개 넘개는 추가 안됨
+        if(counselor.getLicenses().size() + postDtos.size() > 3) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
+
+        // 경력사항 등록
+        postDtos.forEach(postDto -> {
+            Career career = new Career();
+            career.setCounselor(counselor);
+            career.setCompany(postDto.getCompany());
+            career.setResponsibility(postDto.getResponsibility());
+            career.setClassification(postDto.getClassification());
+        });
+        counselor.setModifiedAt(LocalDateTime.now());
+    }
+    // 경력사항 삭제
+    public void deleteCareer(long counselorId, int careerNumber){
+        Counselor counselor = findVerifiedCounselor(counselorId);
+        List<Career> careers = counselor.getCareers();
+
+        // 딱 하나 남아 있는데 삭제할 수 없음
+        if(careers.size() == 1) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
+
+        // 전달받은 careerNumber 번째의 경력사항 삭제
+        if(!IntValidationUtil.isIntInRange(careerNumber, 1, careers.size())) throw new BusinessLogicException(ExceptionCode.CAREER_NOT_FOUND);
+        careers.remove(careerNumber - 1);
+
+        counselorRepository.save(counselor);
+        counselor.setModifiedAt(LocalDateTime.now());
     }
     public Counselor findCounselor(long counselorId){
         return findVerifiedCounselor(counselorId);
@@ -121,6 +156,7 @@ public class CounselorService {
         Optional.ofNullable(counselor.getCallPrice())
                 .ifPresent(callprice -> realCounselor.setCallPrice(callprice));
 
+        counselor.setModifiedAt(LocalDateTime.now());
         return counselorRepository.save(realCounselor);
     }
     private boolean isUserIdAvailable(String userId){
