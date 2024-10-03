@@ -41,6 +41,9 @@ public class Member {
     @Column
     private String ci;
 
+    @Column
+    private Integer depressionScore = null;
+
     @OneToMany(mappedBy = "member")
     private List<Reservation> reservations = new ArrayList<>();
 

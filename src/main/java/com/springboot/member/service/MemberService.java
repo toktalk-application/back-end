@@ -8,6 +8,7 @@ import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.member.dto.MemberDto;
 import com.springboot.member.entity.Member;
 import com.springboot.member.repository.MemberRepository;
 import com.springboot.reservation.dto.ReservationDto;
@@ -49,6 +50,18 @@ public class MemberService {
         member.setRoles(roles);
         return memberRepository.save(member);
     };
+
+    // 우울증 테스트 결과 생성
+    public void createTest(long memberId, MemberDto.Test testDto){
+        Member member = findVerifiedMember(memberId);
+
+        int totalScore = 0;
+        for(int score : testDto.getAnswers()){
+            totalScore += score;
+        }
+        member.setDepressionScore(totalScore);
+        memberRepository.save(member);
+    }
     public Member findMember(long memberId){
         return findVerifiedMember(memberId);
     }
@@ -68,6 +81,13 @@ public class MemberService {
                     realMember.setPassword(passwordEncoder.encode(password));
                 });
         return memberRepository.save(realMember);
+    }
+
+    public void quitMember(long memberId){
+        Member member = findVerifiedMember(memberId);
+        member.setMemberStatus(Member.MemberStatus.INACTIVE);
+
+        memberRepository.save(member);
     }
 
     private boolean isUserIdAvailable(String userId){
