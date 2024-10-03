@@ -10,7 +10,9 @@ import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.entity.Review;
+import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.repository.ReservationRepository;
+import com.springboot.utils.CalendarUtil;
 import com.springboot.utils.CredentialUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -18,18 +20,17 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.YearMonth;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
 public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final CounselorService counselorService;
+    private final ReservationMapper reservationMapper;
     public Reservation createReservation(Reservation reservation, LocalDate date, List<LocalTime> startTimes){
         Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
-
         // 예약 불가능한 날짜
         if(!counselor.getAvailableDates().containsKey(date)) throw new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE);
         // 예약 가능한 시간인지 검사 (예외는 내부적으로 처리, 예약 시간 등록도 내부적으로 처리)
@@ -93,6 +94,36 @@ public class ReservationService {
         report.setContent(reportDto.getContent());
         reservation.setReport(report);
         reservationRepository.save(reservation);
+    }
+
+    // 특정 상담사의 특정 날짜에 잡힌 예약 목록 조회
+    public List<Reservation> getDailyReservations(Counselor counselor, LocalDate date){
+        Set<Reservation> reservations = new HashSet<>();
+        counselor.getAvailableDate(date).getAvailableTimes().forEach(time -> {
+            if(time.getReservation() != null){
+                reservations.add(time.getReservation());
+            }
+        });
+        return reservations.stream().toList();
+    }
+
+    // 특정 상담사의 한 달간 각 날짜별로, 예약이 있는 날인지 여부 조회
+    public Map<LocalDate, Boolean> getMonthlyReservations(Counselor counselor, YearMonth month){
+        // 해당 월의 날짜들 구하기
+        List<LocalDate> dates = CalendarUtil.getMonthDates(month);
+
+        Map<LocalDate, Boolean> result = new HashMap<>();
+        // 각 날짜별로 예약이 있는지 알아보기
+        dates.forEach(date -> {
+            Boolean isReserved;
+            try{
+                isReserved = counselor.getAvailableDate(date).isReservedDate();
+            } catch (BusinessLogicException e){
+                isReserved = null; // true, false 가 아니라 아예 예약 불가능한 날짜라는 뜻
+            }
+            result.put(date, isReserved);
+        });
+        return result;
     }
 
     public Reservation findReservation(long reservationId){

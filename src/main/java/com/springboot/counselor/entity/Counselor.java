@@ -1,6 +1,8 @@
 package com.springboot.counselor.entity;
 
 import com.springboot.counselor.available_date.AvailableDate;
+import com.springboot.exception.BusinessLogicException;
+import com.springboot.exception.ExceptionCode;
 import com.springboot.gender.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -87,20 +89,23 @@ public class Counselor {
         }
     }
 
-    public AvailableDate getAvailableDate(LocalDate date){
-        return availableDates.get(date);
-    }
-
     public void addCareer(Career career){
         careers.add(career);
         if(career.getCounselor() == null){
             career.setCounselor(this);
         }
     }
+
     public void addLicense(License license){
         licenses.add(license);
         if(license.getCounselor() == null){
             license.setCounselor(this);
         }
+    }
+    // 날짜를 통해 상담사가 가진 AvailableDate객체 반환
+    public AvailableDate getAvailableDate(LocalDate date){
+        AvailableDate availableDate = availableDates.get(date);
+        if(availableDate == null) throw new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE);
+        return availableDate;
     }
 }
