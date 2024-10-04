@@ -9,8 +9,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 public class CounselorDto {
@@ -44,6 +46,14 @@ public class CounselorDto {
         private List<Career> careers;
         private int chatPrice;
         private int callPrice;
+    }
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class DefaultDays{
+        private DayOfWeek dayOfWeek;
+        private List<LocalTime> times;
     }
 
     @AllArgsConstructor

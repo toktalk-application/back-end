@@ -80,8 +80,11 @@ public class Reservation {
             member.addReservation(this);
         }
     }
+
+    // 예약의 시작 시점과 종료 시점 구하기
     public TimePeriod getReservationTimePeriod(){
-        LocalTime startTime = LocalTime.MAX;
+        // 예약 타임들이 정렬이 안 되어 있다면
+        /*LocalTime startTime = LocalTime.MAX;
         LocalTime endTime = LocalTime.MIN;
 
         // startTime중 가장 이른 시점과 endTime중 가장 나중 시점을 뽑기
@@ -89,7 +92,9 @@ public class Reservation {
             startTime = startTime.isBefore(time.getStartTime()) ? startTime : time.getStartTime();
             endTime = endTime.isAfter(time.getEndTime()) ? endTime : time.getEndTime();
         }
-        return new TimePeriod(startTime, endTime);
+        return new TimePeriod(startTime, endTime);*/
+        // 이미 예약 타임들이 정렬되어 DB에 들어가 있다면
+        return new TimePeriod(reservationTimes.get(0).getStartTime(), reservationTimes.get(reservationTimes.size() - 1).getEndTime());
     }
     @Getter
     @Setter

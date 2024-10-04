@@ -57,6 +57,7 @@ public class ReservationController {
         // 상담사는 자격 인증이 완료되어 있고 활동 상태여야 함
         /*if(counselor.getCounselorStatus() != Counselor.CounselorStatus.ACTIVE) throw new BusinessLogicException(ExceptionCode.INVALID_COUNSELOR);*/
 
+        // 서비스 로직 실행
         Reservation reservation = reservationService.createReservation(tempReservation, postDto.getDate(), postDto.getStartTimes());
 
         URI location = UriCreator.createUri(DEFAULT_URL, reservation.getReservationId());
