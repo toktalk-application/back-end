@@ -147,13 +147,29 @@ public class CounselorController {
         );
     }
 
+    // 기본 상담 시간 등록
+    @PostMapping("/default-days")
+    public ResponseEntity<?> postDefaultDays(Authentication authentication,
+                                             @RequestBody CounselorDto.DefaultDays postDto){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+
+        // 기본 상담 시간 등록
+        counselorService.setDefaultDays(counselorId, postDto, true);
+        // 실제 AvailableTimes 등록
+        counselorService.addAvailableTimes(counselorId, 2);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(null), HttpStatus.CREATED
+        );
+    }
+
     // 기본 상담 시간 변경
     @PatchMapping("/default-days")
     public ResponseEntity<?> patchDefaultDays(Authentication authentication,
                                               @RequestBody CounselorDto.DefaultDays patchDto){
         long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
 
-        counselorService.setDefaultDays(counselorId, patchDto);
+        counselorService.setDefaultDays(counselorId, patchDto, false);
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(null), HttpStatus.OK

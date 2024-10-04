@@ -49,9 +49,6 @@ public class Counselor {
     @Column
     private String userId;
 
-    @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Map<LocalDate ,AvailableDate> availableDates = new HashMap();
-
     @ElementCollection
     private List<String> roles = new ArrayList<>();
 
@@ -63,6 +60,9 @@ public class Counselor {
 
     @Column
     private int callPrice = 50000;
+
+    @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Map<LocalDate, AvailableDate> availableDates = new HashMap();
 
     @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Career> careers = new ArrayList<>();
