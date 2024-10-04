@@ -1,6 +1,8 @@
 package com.springboot.reservation.mapper;
 
 import com.springboot.counselor.available_date.AvailableTime;
+import com.springboot.counselor.repository.CounselorRepository;
+import com.springboot.counselor.service.CounselorService;
 import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;

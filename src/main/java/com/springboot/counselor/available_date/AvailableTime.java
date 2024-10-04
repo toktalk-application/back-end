@@ -41,7 +41,7 @@ public class AvailableTime {
 
     public void setAvailableDate(AvailableDate availableDate){
         this.availableDate = availableDate;
-        if(!availableDate.getAvailableTimes().contains(this)){
+        if(!availableDate.getAvailableTimes().containsValue(this)){
             availableDate.addAvailableTime(this);
         }
     }
