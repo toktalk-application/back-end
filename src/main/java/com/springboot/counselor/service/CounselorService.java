@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -246,7 +247,7 @@ public class CounselorService {
         DefaultDay defaultDay = counselor.getDefaultDays().get(dayOfWeek);
 
         List<LocalTime> times = defaultDay.getDefaultTimeSlots().stream()
-                .map(timeslot -> timeslot.getStartTime()).toList();
+                .map(timeslot -> timeslot.getStartTime()).collect(Collectors.toList());
 
         return times;
     }

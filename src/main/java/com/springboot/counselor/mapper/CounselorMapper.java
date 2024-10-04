@@ -26,7 +26,7 @@ public interface CounselorMapper {
                         license.getLicenseName(),
                         license.getOrganization(),
                         license.getIssueDate()
-                )).toList();
+                )).collect(Collectors.toList());
         // 경력 -> 경력 dto 변환
         List<CareerDto.Response> careerDtos = counselor.getCareers().stream()
                 .map(career -> new CareerDto.Response(
@@ -34,7 +34,7 @@ public interface CounselorMapper {
                         career.getClassification(),
                         career.getCompany(),
                         career.getResponsibility()
-                )).toList();
+                )).collect(Collectors.toList());
 
         return new CounselorDto.Response(
                 counselor.getCounselorId(),

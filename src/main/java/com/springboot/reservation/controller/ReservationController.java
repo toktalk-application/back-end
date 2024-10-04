@@ -103,9 +103,14 @@ public class ReservationController {
         CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
 
         switch (auth.getUserType()){
-            case MEMBER -> reservationService.cancelReservationByMember(reservationId);
-            case COUNSELOR -> reservationService.cancelReservationByCounselor(reservationId, cancelReason);
-            default -> throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+            case MEMBER:
+                reservationService.cancelReservationByMember(reservationId);
+                break;
+            case COUNSELOR:
+                reservationService.cancelReservationByCounselor(reservationId, cancelReason);
+                break;
+            default:
+                throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
         }
         return ResponseEntity.noContent().build();
     }
