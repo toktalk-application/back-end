@@ -10,6 +10,7 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -49,6 +50,6 @@ public class DefaultDay {
     public List<LocalTime> getStartTimes(){
         return defaultTimeSlots.stream()
                 .map(timeslot -> timeslot.getStartTime())
-                .toList();
+                .collect(Collectors.toList());
     }
 }

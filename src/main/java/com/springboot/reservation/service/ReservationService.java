@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -111,7 +112,7 @@ public class ReservationService {
                 reservations.add(time.getReservation());
             }
         });
-        return reservations.stream().toList();
+        return new ArrayList<>(reservations);
     }
 
     // 특정 상담사의 한 달간 각 날짜별로, 예약이 있는 날인지 여부 조회
@@ -181,12 +182,23 @@ public class ReservationService {
         reservation.setReservationStatus(Reservation.ReservationStatus.CANCELLED_BY_COUNSELOR);
         // 취소 사유 등록
         switch (cancelReason){
-            case 1 -> reservation.setCancelComment("ㅈㅅ");
-            case 2 -> reservation.setCancelComment("ㅈㅅ ㅋ");
-            case 3 -> reservation.setCancelComment("ㅈㅅ ㅋㅋ");
-            case 4 -> reservation.setCancelComment("ㅈㅅ ㅋㅋㅋ");
-            case 5 -> reservation.setCancelComment("ㅈㅅ ㅋㅋㅋㅋ");
-            default -> throw new BusinessLogicException(ExceptionCode.INVALID_CANCLE_REASON);
+            case 1:
+                reservation.setCancelComment("ㅈㅅ");
+                break;
+            case 2:
+                reservation.setCancelComment("ㅈㅅ ㅋ");
+                break;
+            case 3:
+                reservation.setCancelComment("ㅈㅅ ㅋㅋ");
+                break;
+            case 4:
+                reservation.setCancelComment("ㅈㅅ ㅋㅋㅋ");
+                break;
+            case 5:
+                reservation.setCancelComment("ㅈㅅ ㅋㅋㅋㅋ");
+                break;
+            default:
+                throw new BusinessLogicException(ExceptionCode.INVALID_CANCLE_REASON);
         }
         // 바뀐 상태 저장하고 리턴
         reservationRepository.save(reservation);

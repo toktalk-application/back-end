@@ -14,6 +14,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -135,6 +136,6 @@ public class Counselor {
         return availableDates.entrySet().stream()
                 .filter(entry -> entry.getKey().getDayOfWeek().equals(dayOfWeek))
                 .map(entry -> entry.getValue())
-                .toList();
+                .collect(Collectors.toList());
     }
 }
