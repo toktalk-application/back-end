@@ -133,7 +133,7 @@ public class Counselor {
     // 특정 요일에 해당하는 AvailableDate 반환
     public List<AvailableDate> getAvailableDatesInCertainDayOfWeek(DayOfWeek dayOfWeek){
         return availableDates.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(dayOfWeek))
+                .filter(entry -> entry.getKey().getDayOfWeek().equals(dayOfWeek))
                 .map(entry -> entry.getValue())
                 .toList();
     }
