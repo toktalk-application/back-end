@@ -31,15 +31,15 @@ public class ReservationService {
     // 상담 예약 등록
     public Reservation createReservation(Reservation reservation, LocalDate date, List<LocalTime> startTimes){
         Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
-        // 이미 지난 날짜면 안됨
-        if(date.isBefore(LocalDate.now())) throw new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE);
-        // 예약 불가능한 날짜
-        if(!counselor.getAvailableDates().containsKey(date)) throw new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE);
-        // 이미 지난 시간이어도 안됨
-        LocalTime startTime = reservation.getReservationTimePeriod().getStartTime();
-        if(startTime.isBefore(LocalTime.now())) throw new BusinessLogicException(ExceptionCode.UNAVAILABLE_TIME);
+        // 최소 한 타임은 예약해야 함
+        if(startTimes.isEmpty())throw new BusinessLogicException(ExceptionCode.TIMESLOT_REQUIRED);
         // 예약 시간 정렬
         Collections.sort(startTimes);
+        // 이미 지난 시간이면 안됨
+        LocalDateTime dateTime = LocalDateTime.of(date, startTimes.get(0));
+        if(dateTime.isBefore(LocalDateTime.now())) throw new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE);
+        // 예약 불가능한 날짜
+        if(!counselor.getAvailableDates().containsKey(date)) throw new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE);
         // 예약 가능한 시간인지 검사 (예외는 내부적으로 처리, 예약 시간 등록도 내부적으로 처리)
         counselor.getAvailableDate(date).validateReservationTimes(reservation, startTimes);
         // 예약 시간들이 연속적인지 검사
