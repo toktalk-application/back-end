@@ -10,13 +10,10 @@ import com.springboot.counselor.mapper.CounselorMapper;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
-import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.service.ReservationService;
-import com.springboot.response.MultiResponseDto;
 import com.springboot.response.SingleResponseDto;
-import com.springboot.response.SingleResponseEntity;
 import com.springboot.utils.CredentialUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
@@ -156,7 +153,7 @@ public class CounselorController {
         // 기본 상담 시간 등록
         counselorService.setDefaultDays(counselorId, postDto, true);
         // 실제 AvailableTimes 등록
-        counselorService.addAvailableTimes(counselorId, 2);
+        counselorService.addInitialAvailableTimes(counselorId, 2);
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(null), HttpStatus.CREATED

@@ -15,6 +15,7 @@ import com.springboot.member.repository.MemberRepository;
 import com.springboot.utils.CalendarUtil;
 import com.springboot.utils.IntValidationUtil;
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,7 +134,7 @@ public class CounselorService {
         counselorRepository.save(counselor);
     }
 
-    // 경력사항 삭제
+    // 단일 경력사항 삭제
     public void deleteCareer(long counselorId, int careerNumber){
         Counselor counselor = findVerifiedCounselor(counselorId);
         List<Career> careers = counselor.getCareers();
@@ -180,7 +181,7 @@ public class CounselorService {
             DefaultTimeSlot timeSlot = new DefaultTimeSlot();
             timeSlot.setStartTime(time);
             timeSlot.setEndTime(time.plusMinutes(50));
-            timeSlot.setDefaultDay(defaultDay); // 하나씩 등록 (양방향 set메서드)
+            timeSlot.setDefaultDay(defaultDay); // 하나씩 등록 (DefaultDay <-> DefaultTimeslot 양방향 set메서드)
         }
 
         // 수정된 정보에 맞게 실제 AvailableTimes 목록 변경
@@ -190,20 +191,35 @@ public class CounselorService {
     }
 
     // 상담사의 이번 달 포함 n달 치 AvailableTimes 추가 (새로 추가)
-    public void addAvailableTimes(long counselorId, int months){
+    public void addInitialAvailableTimes(long counselorId, int months){
         Counselor counselor = findVerifiedCounselor(counselorId);
-
         // months는 자연수만 들어와야 함
         if(months < 1) throw new BusinessLogicException(ExceptionCode.INVALID_MONTH_PARAMETER);
         // 한계일 설정 ({month - 1} 개월 뒤의 마지막 날짜)
         LocalDate limitDate = LocalDate.now().withDayOfMonth(1).plusMonths(months).minusDays(1);
+        addAvailableTimes(counselor, LocalDate.now(), limitDate);
+    }
+
+    // 달이 넘어갈 때 다다음 달의 AvailableTimes 추가
+    @Scheduled(cron = "0 0 0 1 * ?") // 매월 1일 0시 0분 0초에 실행
+    public void addExtraAvailableTimes(){
+        LocalDate startDate = LocalDate.now().plusMonths(1);
+        LocalDate limitDate = LocalDate.now().plusMonths(2).minusDays(1);
+        // 모든 상담사에 대해 실행
+        counselorRepository.findAll().forEach(counselor -> {
+            // 물론 유효한 상담사들에 한해서
+            if(counselor.getCounselorStatus().equals(Counselor.Status.ACTIVE)){
+                addAvailableTimes(counselor, startDate, limitDate);
+            }
+        });
+    }
+    private void addAvailableTimes(Counselor counselor, LocalDate startDate, LocalDate limitDate){
         // 범위 내에서 각 요일에 대한 기본 시간표를 바탕으로 AvailableTime 생성
         counselor.getDefaultDays().forEach((dayOfWeek, defaultDay) -> {
             // 기준일 설정 (오늘 날짜 기준 가장 가까운 해당 요일로 초기화)
-            LocalDate refDate = CalendarUtil.getNextDateOfCertainDayOfWeek(dayOfWeek);
+            LocalDate refDate = CalendarUtil.getNextDateOfCertainDayOfWeek(dayOfWeek, startDate);
             while(refDate.isBefore(limitDate)){
                 // AvailableDate 생성 및 등록
-                /*AvailableDate targetDate = counselor.getAvailableDates().get(refDate);*/
                 AvailableDate targetDate = new AvailableDate();
                 targetDate.setDate(refDate);
                 targetDate.setCounselor(counselor); // Counselor <-> AvailableDate 양방향 set 메서드
@@ -229,7 +245,7 @@ public class CounselorService {
                 AvailableTime newTime = new AvailableTime();
                 newTime.setStartTime(addition);
                 newTime.setEndTime(addition.plusMinutes(50));
-                newTime.setAvailableDate(date); // 양방향 set 메서드
+                newTime.setAvailableDate(date); // AvailableDate <-> AvailableTime 양방향 set 메서드
             }
             // 그리고 removes에 해당하는 시간 삭제
             for(LocalTime remove : removes){
