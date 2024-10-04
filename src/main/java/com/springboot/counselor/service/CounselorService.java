@@ -149,13 +149,13 @@ public class CounselorService {
     }
 
     // 특정 요일의 기본 상담 시간 수정
-    public void setDefaultDays(long counselorId, CounselorDto.DefaultDays patchDto){
+    public void setDefaultDays(long counselorId, CounselorDto.DefaultDays dto, boolean isInitialization){
 
         Counselor counselor = findVerifiedCounselor(counselorId);
 
         // 먼저 뭐가 추가할 타임인지, 뭐가 삭제할 타임인지 판별
-        List<LocalTime> currentTimes = counselor.getDefaultDays().get(patchDto.getDayOfWeek()).getStartTimes();
-        List<LocalTime> newTimes = patchDto.getTimes();
+        List<LocalTime> currentTimes = counselor.getDefaultDays().get(dto.getDayOfWeek()).getStartTimes();
+        List<LocalTime> newTimes = dto.getTimes();
 
         Set<LocalTime> additions = new HashSet<>(newTimes);     // currentTimes에는 없고, newTimes에는 있음
         Set<LocalTime> unchanged = new HashSet<>();             // 양쪽에 다 있음
@@ -171,27 +171,24 @@ public class CounselorService {
         }
 
         // 해당 요일에 대해 Counselor의 Default 상담시간 업데이트
-        DefaultDay defaultDay = counselor.getDefaultDays().get(patchDto.getDayOfWeek());
+        DefaultDay defaultDay = counselor.getDefaultDays().get(dto.getDayOfWeek());
         // 먼저 기존의 DefaultTimeSlot 비우기
         defaultDay.getDefaultTimeSlots().clear();
         // LocalTime들을 DefaultTimeSlot으로 변환 후 DefaultDay에 등록
-        for(LocalTime time : patchDto.getTimes()){
+        for(LocalTime time : dto.getTimes()){
             DefaultTimeSlot timeSlot = new DefaultTimeSlot();
             timeSlot.setStartTime(time);
             timeSlot.setEndTime(time.plusMinutes(50));
             timeSlot.setDefaultDay(defaultDay); // 하나씩 등록 (양방향 set메서드)
         }
 
-        counselorRepository.save(counselor);
-
-        /*// 수정된 정보에 맞게 실제 AvailableTimes 목록 변경
-        updateAvailableTimes(counselor, patchDto.getDayOfWeek(), additions, removes);*/
-
-        /*// 설정한 default time 정보에 따라 자동으로 AvailableTime 생성
-        addAvailableTimes(counselorId, 2);*/
+        // 수정된 정보에 맞게 실제 AvailableTimes 목록 변경
+        if(!isInitialization){
+            updateAvailableTimes(counselor, dto.getDayOfWeek(), additions, removes);
+        }
     }
 
-    // 상담사의 이번 달 포함 n달 치 AvailableTimes 추가
+    // 상담사의 이번 달 포함 n달 치 AvailableTimes 추가 (새로 추가)
     public void addAvailableTimes(long counselorId, int months){
         Counselor counselor = findVerifiedCounselor(counselorId);
 
@@ -219,8 +216,6 @@ public class CounselorService {
                 refDate = refDate.plusDays(7);
             }
         });
-        /*// 변경사항 저장 (필요 없을듯?)
-        counselorRepository.save(counselor);*/
     }
 
     // 상담사의 특정 요일 AvailableTimes 정보 변경
