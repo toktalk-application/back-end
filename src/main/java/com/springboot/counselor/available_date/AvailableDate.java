@@ -12,7 +12,9 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -31,7 +33,7 @@ public class AvailableDate {
     private LocalDate date;
 
     @OneToMany(mappedBy = "availableDate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AvailableTime> availableTimes = new ArrayList<>();
+    private Map<LocalTime, AvailableTime> availableTimes = new HashMap<>();
 
     public AvailableDate(LocalDate date){
         this.date = date;
@@ -48,13 +50,13 @@ public class AvailableDate {
         }
     }
     public void addAvailableTime(AvailableTime availableTime){
-        availableTimes.add(availableTime);
+        availableTimes.put(availableTime.getStartTime(), availableTime);
         if(availableTime.getAvailableDate() == null){
             availableTime.setAvailableDate(this);
         }
     }
     private void validateReservationTime(Reservation reservation, LocalTime reservationTime){
-        for(AvailableTime time : availableTimes){
+        for(AvailableTime time : availableTimes.values()){
             if(time.getStartTime().equals(reservationTime)){
                 if(time.getReservation() != null){
                     // 이미 예약된 시간이다 임마
@@ -78,7 +80,7 @@ public class AvailableDate {
     // 이 날짜에 잡힌 예약이 하나라도 있는지
     public boolean isReservedDate(){
         boolean isReserved = false;
-        for(AvailableTime time : availableTimes){
+        for(AvailableTime time : availableTimes.values()){
             if(time.getReservation() != null) {
                 isReserved = true;
                 break;
