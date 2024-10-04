@@ -10,6 +10,12 @@ tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
 
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(11)
+	}
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -39,6 +45,8 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.mapstruct:mapstruct:1.5.1.Final'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.1.Final'
+	// MySQL 사용
+	implementation 'mysql:mysql-connector-java'
 
 	// 코드에프 pass
 	implementation 'org.json:json:20210307'
