@@ -19,6 +19,9 @@ jobs:
           java-version: '11'
           distribution: 'zulu'
 
+      - name: Install dos2unix
+        run: sudo apt-get install -y dos2unix
+
       - name: Convert line endings to LF
         run: dos2unix gradlew
 
