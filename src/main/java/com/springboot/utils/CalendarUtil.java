@@ -1,8 +1,10 @@
 package com.springboot.utils;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CalendarUtil {
@@ -18,5 +20,13 @@ public class CalendarUtil {
             dates.add(LocalDate.of(month.getYear(), month.getMonthValue(), i));
         }
         return dates;
+    }
+
+    // 요일을 입력받아 해당 요일 중 오늘로부터 가장 가까운 날짜 반환
+    public static LocalDate getNextDateOfCertainDayOfWeek(DayOfWeek dayOfWeek) {
+        LocalDate today = LocalDate.now();
+        int daysUntilNext = (dayOfWeek.getValue() - today.getDayOfWeek().getValue() + 7) % 7;
+
+        return today.plusDays(daysUntilNext);
     }
 }

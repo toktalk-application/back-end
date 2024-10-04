@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -14,5 +16,5 @@ import java.util.List;
 public class AvailableDateDto {
     private long availableDateId;
     private LocalDate date;
-    private List<AvailableTimeDto> availableTimes;
+    private Map<LocalTime, AvailableTimeDto> availableTimes;
 }

@@ -27,7 +27,7 @@ public class Keyword {
     public void setCounselor(Counselor counselor){
         this.counselor = counselor;
         if(!counselor.getKeywords().contains(this)){
-            counselor.getKeywords().add(this);
+            counselor.addKeyword(this);
         }
     }
 }

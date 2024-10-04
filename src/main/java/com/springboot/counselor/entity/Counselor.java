@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -72,6 +73,9 @@ public class Counselor {
     @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Keyword> keywords = new ArrayList<>();
 
+    @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Map<DayOfWeek, DefaultDay> defaultDays = new HashMap<>();
+
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -112,10 +116,25 @@ public class Counselor {
         }
     }
 
+    public void addDefaultDay(DefaultDay defaultDay){
+        defaultDays.put(defaultDay.getDayOfWeek(), defaultDay);
+        if(defaultDay.getCounselor() == null){
+            defaultDay.setCounselor(this);
+        }
+    }
+
     // 날짜를 통해 상담사가 가진 AvailableDate객체 반환
     public AvailableDate getAvailableDate(LocalDate date){
         AvailableDate availableDate = availableDates.get(date);
         if(availableDate == null) throw new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE);
         return availableDate;
+    }
+
+    // 특정 요일에 해당하는 AvailableDate 반환
+    public List<AvailableDate> getAvailableDatesInCertainDayOfWeek(DayOfWeek dayOfWeek){
+        return availableDates.entrySet().stream()
+                .filter(entry -> entry.getKey().equals(dayOfWeek))
+                .map(entry -> entry.getValue())
+                .toList();
     }
 }

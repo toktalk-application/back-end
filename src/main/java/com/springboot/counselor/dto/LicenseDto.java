@@ -22,7 +22,7 @@ public class LicenseDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class Response{
-        private long licenseDto;
+        private long licenseId;
         private String licenseName;
         private String organization;
         private LocalDate issueDate;

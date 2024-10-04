@@ -27,7 +27,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.*;
 
@@ -142,6 +144,31 @@ public class CounselorController {
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(counselorMapper.counselorToCounselorResponseDto(patchedCounselor)), HttpStatus.OK
+        );
+    }
+
+    // 기본 상담 시간 변경
+    @PatchMapping("/default-days")
+    public ResponseEntity<?> patchDefaultDays(Authentication authentication,
+                                              @RequestBody CounselorDto.DefaultDays patchDto){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+
+        counselorService.setDefaultDays(counselorId, patchDto);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(null), HttpStatus.OK
+        );
+    }
+
+    // 자신의 기본 상담 시간 조회
+    @GetMapping("/default-days")
+    public ResponseEntity<?> getDefaultDay(Authentication authentication,
+                                           @RequestParam DayOfWeek dayOfWeek){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        List<LocalTime> times = counselorService.getDefaultTimesOfDay(counselorId, dayOfWeek);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(times), HttpStatus.OK
         );
     }
 

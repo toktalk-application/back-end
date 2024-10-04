@@ -15,6 +15,7 @@ public enum ExceptionCode {
     UNMATCHED_COUNSELOR(403, "Counselor id is not match"),
     INVALID_COUNSELOR(403, "Invalid counselor"),
     CANCELLATION_TOO_LATE(403, "Cancellation must be made at least 24 hours in advance"),
+    TIMESLOT_DELETION_DENIED(403, "Occupied timeslot cannot be deleted"),
     UNCOMPLETE_COUNSELING(404, "Counseling not finished"),
     MEMBER_NOT_FOUND(404, "Member not found"),
     COUNSELOR_NOT_FOUND(404, "Counselor not found"),
@@ -29,7 +30,8 @@ public enum ExceptionCode {
     RESERVATION_TIMESLOT_OCCUPIED(409, "Already occupied timeslot"),
     REVIEW_EXIST(409, "Review already exists"),
     REPORT_EXIST(409, "Report already exists"),
-    CREDENTIAL_NOT_FOUND(500, "Some credential field not found")
+    CREDENTIAL_NOT_FOUND(500, "Some credential field not found"),
+    INVALID_MONTH_PARAMETER(500, "Months parameter of addAvailableTime() method in CounselorService must be positive")
     ;
     @Getter
     private int status;
