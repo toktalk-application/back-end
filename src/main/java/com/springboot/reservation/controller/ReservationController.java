@@ -10,22 +10,25 @@ import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
 import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Reservation;
-import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.mapper.ReservationMapper;
-import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.reservation.service.ReservationService;
+import com.springboot.response.MultiResponseDto;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.utils.CredentialUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/reservations")
@@ -115,5 +118,60 @@ public class ReservationController {
                 throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
         }
         return ResponseEntity.noContent().build();
+    }
+
+    // 특정 상담사에 대한 특정일 또는 월별 예약 정보 조회
+    @GetMapping
+    public ResponseEntity<?> getReservations(/*Authentication authentication,*/
+                                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
+                                             @RequestParam long counselorId){
+        // 상담사 찾아오기
+        Counselor counselor = counselorService.findCounselor(counselorId);
+
+        if(date != null){ // date 파라미터를 넣었으면 특정일 조회
+            List<Reservation> dailyReservations = reservationService.findDailyReservations(counselor, date);
+            List<String> counselorNames = dailyReservations.stream()
+                    .map(reservation -> counselorService.findCounselor(reservation.getCounselorId()).getName())
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(
+                    new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(dailyReservations, counselorNames)), HttpStatus.OK
+            );
+        } else if (month != null) { // month 파라미터를 넣었으면 특정월 조회
+            Map<LocalDate, Boolean> monthlyReservations = reservationService.getMonthlySchedule(counselor, month);
+            return new ResponseEntity<>(
+                    new SingleResponseDto<>(monthlyReservations), HttpStatus.OK
+            );
+        }
+        // date, month 둘 다 안 넣었을 때
+        throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
+    }
+
+    // 자신에게 잡힌(상담사), 또는 자신이 예약한(회원) 상담 조회
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyReservations(Authentication authentication){
+        LoginDto.UserType userType = CredentialUtil.getUserType(authentication);
+
+        switch (userType){
+            case MEMBER:
+                long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+                List<Reservation> reservations = reservationService.findReservationsOfMember(memberId);
+                List<String> counselorNames = reservations.stream()
+                        .map(reservation -> counselorService.findCounselor(reservation.getCounselorId()).getName())
+                        .collect(Collectors.toList());
+                return new ResponseEntity<>(
+                        new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(reservations, counselorNames)), HttpStatus.OK
+                );
+            case COUNSELOR:
+                long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+                List<Reservation> reservations2 = reservationService.findReservationsOfCounselor(counselorId);
+                List<String> counselorNames2 = reservations2.stream()
+                        .map(reservation -> counselorService.findCounselor(reservation.getCounselorId()).getName())
+                        .collect(Collectors.toList());
+            default:
+                throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+        }
+
     }
 }
