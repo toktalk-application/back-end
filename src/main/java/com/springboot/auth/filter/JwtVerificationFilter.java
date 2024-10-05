@@ -54,6 +54,8 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         Map<String,Object> claims = jwtTokenizer.getClaims(jws, base64EncodedSecretKey).getBody();
         return claims;
     }
+
+    // 어떤 요청을 받았을 때 넣어 준 액세스 토큰을 Authentication 객체로 변환하는 코드
     private void setAuthenticationToContext(Map<String,Object> claims){
         String username = (String) claims.get("username");
         List<GrantedAuthority> authorityList = authorityUtils.createAuthorities((List)claims.get("roles"));

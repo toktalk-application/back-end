@@ -52,12 +52,12 @@ public class MemberDto {
     @NoArgsConstructor
     public static class FcmTokenDto {
         private String fcmToken;
-
+    }
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter
     @Setter
-    public static class Test{
+    public static class Test {
         private List<Integer> answers;
     }
 }
