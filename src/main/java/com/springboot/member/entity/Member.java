@@ -10,9 +10,7 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -41,12 +39,15 @@ public class Member {
     @Column
     private String ci;
 
+    @Column
+    private Integer depressionScore = null;
+
     @OneToMany(mappedBy = "member")
     private List<Reservation> reservations = new ArrayList<>();
 
     @Column
     @Enumerated(EnumType.STRING)
-    private MemberStatus memberStatus = MemberStatus.ACTIVE;
+    private Status memberStatus = Status.ACTIVE;
 
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -61,11 +62,10 @@ public class Member {
     private String fcmToken;
 
     @AllArgsConstructor
-    public enum MemberStatus{
+    public enum Status {
         ACTIVE,
         INACTIVE
     }
-
     public void addReservation(Reservation reservation){
         reservations.add(reservation);
         if(reservation.getMember() == null){

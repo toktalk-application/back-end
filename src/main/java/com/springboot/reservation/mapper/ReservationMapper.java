@@ -1,12 +1,19 @@
 package com.springboot.reservation.mapper;
 
 import com.springboot.counselor.available_date.AvailableTime;
+import com.springboot.counselor.repository.CounselorRepository;
+import com.springboot.counselor.service.CounselorService;
 import com.springboot.reservation.dto.ReservationDto;
+import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
+import com.springboot.reservation.entity.Review;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,23 +21,40 @@ import java.util.List;
 public interface ReservationMapper {
     Reservation reservationPostDtoToReservation(ReservationDto.Post postDto);
     default ReservationDto.Response reservationToReservationResponseDto(Reservation reservation){
-        LocalTime startTime = LocalTime.MAX;
-        LocalTime endTime = LocalTime.MIN;
+        // 시작시간, 끝시간 구하기
+        Reservation.TimePeriod timePeriod = reservation.getReservationTimePeriod();
+        LocalTime startTime = timePeriod.getStartTime();
+        LocalTime endTime = timePeriod.getEndTime();
 
-        // startTime중 가장 이른 시점과 endTime중 가장 나중 시점을 뽑기
-        for(AvailableTime time : reservation.getReservationTimes()){
-            startTime = startTime.isBefore(time.getStartTime()) ? startTime : time.getStartTime();
-            endTime = endTime.isAfter(time.getEndTime()) ? endTime : time.getEndTime();
+        // 예약 취소된 상태면 reservationTimes가 비어 있기 때문에 예외 처리
+        LocalDate date = reservation.getReservationTimes().isEmpty() ? null : reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+
+        // 리뷰 dto로 변환
+        ReservationDto.Review reviewDto = null;
+        if(reservation.getReview() != null){
+            Review review = reservation.getReview();
+            reviewDto = new ReservationDto.Review(review.getContent(), review.getRating(), review.getCreatedAt());
+        }
+        // 진단 dto로 변환
+        ReservationDto.Report reportDto = null;
+        if(reservation.getReport() != null){
+            Report report = reservation.getReport();
+            reportDto = new ReservationDto.Report(report.getContent(), report.getCreatedAt());
         }
 
         return new ReservationDto.Response(
                 reservation.getReservationId(),
                 reservation.getCounselorId(),
+                reservation.getMember().getNickname(),
+                reservation.getCounselorName(),
                 reservation.getComment(),
                 reservation.getType(),
-                reservation.getReservationTimes().get(0).getAvailableDate().getDate(),
-                startTime,
-                endTime
+                reservation.getReservationStatus(),
+                date,
+                startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                endTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                reviewDto,
+                reportDto
         );
     };
     default List<ReservationDto.Response> reservationsToReservationResponseDtos(List<Reservation> reservations){

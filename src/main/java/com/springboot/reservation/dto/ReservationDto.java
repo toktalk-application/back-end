@@ -1,6 +1,8 @@
 package com.springboot.reservation.dto;
 
+import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
+import com.springboot.reservation.entity.Review;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +19,6 @@ public class ReservationDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Post{
-        private long memberId;
         private long counselorId;
         private String comment;
         private Reservation.CounselingType type;
@@ -32,10 +33,34 @@ public class ReservationDto {
     public static class Response{
         private long reservationId;
         private long counselorId;
+        private String memberNickname;
+        private String counselorName;
         private String comment;
         private Reservation.CounselingType type;
+        private Reservation.ReservationStatus status;
         private LocalDate date;
-        private LocalTime startTime;
-        private LocalTime endTime;
+        private String startTime;
+        private String endTime;
+        private Review review;
+        private Report report;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Review{
+        private String content;
+        private int rating;
+        private LocalDateTime createdAt;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Report{
+        private String content;
+        private LocalDateTime createdAt;
     }
 }

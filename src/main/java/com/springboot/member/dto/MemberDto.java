@@ -25,6 +25,14 @@ public class MemberDto {
         private String ci;
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class Patch{
+        private String password;
+    }
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter
@@ -38,10 +46,18 @@ public class MemberDto {
         private List<ReservationDto.Response> reservations;
     }
 
+
     @Getter
     @Setter
     @NoArgsConstructor
     public static class FcmTokenDto {
         private String fcmToken;
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class Test{
+        private List<Integer> answers;
     }
 }

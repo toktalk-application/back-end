@@ -2,7 +2,7 @@ package com.springboot.auth;
 
 import com.springboot.auth.userdetails.CounselorDetailsService;
 import com.springboot.auth.userdetails.MemberDetailsService;
-import com.springboot.dto.LoginDto;
+import com.springboot.auth.dto.LoginDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -10,9 +10,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
@@ -50,7 +53,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             throw new BadCredentialsException("Invalid password");
         }
 
-        return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
+        /*return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());*/
+        return new CustomAuthenticationToken(userDetails, password, userType);
     }
 
     @Override
