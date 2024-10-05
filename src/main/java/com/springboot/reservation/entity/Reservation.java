@@ -2,11 +2,13 @@ package com.springboot.reservation.entity;
 
 import com.springboot.counselor.available_date.AvailableTime;
 import com.springboot.member.entity.Member;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +20,11 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long reservationId;
 
-    /*@ManyToOne
-    @JoinColumn(name = "counselor_id")
-    private Member counselor;*/
-
+    @Column
     private long counselorId;
+
+    @Column
+    private String counselorName;
 
     @ManyToOne
     @JoinColumn(name = "member_id")
@@ -44,6 +46,14 @@ public class Reservation {
 
     @OneToMany(mappedBy = "reservation")
     private List<AvailableTime> reservationTimes = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "review_id")
+    private Review review;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "report_id")
+    private Report report;
 
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -69,5 +79,28 @@ public class Reservation {
         if(!member.getReservations().contains(this)){
             member.addReservation(this);
         }
+    }
+
+    // 예약의 시작 시점과 종료 시점 구하기
+    public TimePeriod getReservationTimePeriod(){
+        // 예약 타임들이 정렬이 안 되어 있다면
+        /*LocalTime startTime = LocalTime.MAX;
+        LocalTime endTime = LocalTime.MIN;
+
+        // startTime중 가장 이른 시점과 endTime중 가장 나중 시점을 뽑기
+        for(AvailableTime time : reservationTimes){
+            startTime = startTime.isBefore(time.getStartTime()) ? startTime : time.getStartTime();
+            endTime = endTime.isAfter(time.getEndTime()) ? endTime : time.getEndTime();
+        }
+        return new TimePeriod(startTime, endTime);*/
+        // 이미 예약 타임들이 정렬되어 DB에 들어가 있다면
+        return new TimePeriod(reservationTimes.get(0).getStartTime(), reservationTimes.get(reservationTimes.size() - 1).getEndTime());
+    }
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public class TimePeriod{
+        private LocalTime startTime;
+        private LocalTime endTime;
     }
 }

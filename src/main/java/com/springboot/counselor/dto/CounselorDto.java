@@ -1,12 +1,19 @@
 package com.springboot.counselor.dto;
 
+import com.springboot.counselor.entity.Career;
+import com.springboot.counselor.entity.Counselor;
+import com.springboot.counselor.entity.License;
 import com.springboot.gender.Gender;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 
 public class CounselorDto {
     @AllArgsConstructor
@@ -22,5 +29,51 @@ public class CounselorDto {
         private String ci;
         private String name;
         private String company;
+        private List<License> licenses;
+        private List<Career> careers;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class Patch{
+        private String password;
+        private String phone;
+        private String company;
+        private String name;
+        private List<License> licenses;
+        private List<Career> careers;
+        private int chatPrice;
+        private int callPrice;
+    }
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class DefaultDays{
+        private DayOfWeek dayOfWeek;
+        private List<LocalTime> times;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class Response{
+        private long counselorId;
+        private LocalDate birth;
+        private Gender gender;
+        private Counselor.Status counselorStatus;
+        private String name;
+        private String userId;
+        private String company;
+        private List<AvailableDateDto> availableDates;
+        private int chatPrice;
+        private int callPrice;
+        private List<CareerDto.Response> careers;
+        private List<LicenseDto.Response> licenses;
+        private LocalDateTime createdAt;
+        private LocalDateTime modifiedAt;
     }
 }

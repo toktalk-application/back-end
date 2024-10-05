@@ -3,12 +3,11 @@ package com.springboot.auth.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.auth.CustomAuthenticationToken;
 import com.springboot.counselor.entity.Counselor;
-import com.springboot.dto.LoginDto;
+import com.springboot.auth.dto.LoginDto;
 import com.springboot.auth.jwt.JwtTokenizer;
 import com.springboot.member.entity.Member;
 import lombok.SneakyThrows;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -83,6 +82,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Map<String,Object> claims = new HashMap<>();
         claims.put("username", member.getUserId());
         claims.put("roles", member.getRoles());
+        claims.put("usertype", "MEMBER");
+        claims.put("memberId", member.getMemberId());
+        claims.put("userId", member.getUserId());
 
         String subject = member.getUserId();
         Date expiration = jwtTokenizer.getTokenExpiration(jwtTokenizer.getAccessTokenExpirationMinutes());
@@ -103,6 +105,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Map<String,Object> claims = new HashMap<>();
         claims.put("username", counselor.getUserId());
         claims.put("roles", counselor.getRoles());
+        claims.put("usertype", "COUNSELOR");
+        claims.put("counselorId", counselor.getCounselorId());
+        claims.put("userId", counselor.getUserId());
 
         String subject = counselor.getUserId();
         Date expiration = jwtTokenizer.getTokenExpiration(jwtTokenizer.getAccessTokenExpirationMinutes());
