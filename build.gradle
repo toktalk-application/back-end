@@ -41,6 +41,8 @@ dependencies {
 
 	// 코드에프 pass
 	implementation 'org.json:json:20210307'
+
+	implementation 'com.google.firebase:firebase-admin:9.2.0'           // Google Firebase Admin
 }
 
 tasks.named('javadoc') {
