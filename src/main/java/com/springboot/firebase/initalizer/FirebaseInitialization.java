@@ -1,4 +1,4 @@
-package com.springboot.fcm;
+package com.springboot.firebase.initalizer;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -16,7 +16,7 @@ public class FirebaseInitialization {
     public void initialize() {
         try {
             FileInputStream serviceAccount =
-                    new FileInputStream("./src/main/resources/firebase-service-account.json");
+                    new FileInputStream("src/main/resources/firebase/toktalk-4e546-firebase-adminsdk-fhoe5-01668796f1.json");
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
