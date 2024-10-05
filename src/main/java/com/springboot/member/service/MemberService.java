@@ -91,5 +91,21 @@ public class MemberService {
     private boolean isNicknameAvailable(String nickname){
         return !memberRepository.findByNickname(nickname).isPresent();
     }
+
+    // 검증후 Fcm토큰을 저장하는 메서드
+    @Transactional
+    public void updateFcmToken(long memberId, String fcmToken) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+        member.setFcmToken(fcmToken);
+        memberRepository.save(member);
+    }
+
+    // 사용자의 로그인Id를 사용해 사용자 memberId를 조회하는 메서드
+    public long getMemberIdByUserId(String username) {
+        return memberRepository.findByUserId(username)
+                .map(Member::getMemberId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
 }
 

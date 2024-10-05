@@ -45,6 +45,14 @@ public class MemberDto {
         private Gender gender;
         private List<ReservationDto.Response> reservations;
     }
+
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class FcmTokenDto {
+        private String fcmToken;
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter
