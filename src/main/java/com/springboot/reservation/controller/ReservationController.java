@@ -70,8 +70,10 @@ public class ReservationController {
                                             @PathVariable long reservationId){
         Reservation reservation = reservationService.findReservation(reservationId);
 
+        Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
+
         return new ResponseEntity<>(
-                new SingleResponseDto<>(reservationMapper.reservationToReservationResponseDto(reservation)), HttpStatus.OK
+                new SingleResponseDto<>(reservationMapper.reservationToReservationResponseDto(reservation, counselor.getName())), HttpStatus.OK
         );
     }
 

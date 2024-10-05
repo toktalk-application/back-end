@@ -12,6 +12,7 @@ import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.member.entity.Member;
 import com.springboot.member.repository.MemberRepository;
+import com.springboot.reservation.entity.Reservation;
 import com.springboot.utils.CalendarUtil;
 import com.springboot.utils.IntValidationUtil;
 import lombok.AllArgsConstructor;
@@ -303,5 +304,15 @@ public class CounselorService {
         Optional<Member> optionalMember = memberRepository.findByUserId(userId);
         Optional<Counselor> optionalCounselor = counselorRepository.findByUserId(userId);
         return optionalMember.isEmpty() && optionalCounselor.isEmpty();
+    }
+
+    public String getCounselorName(Reservation reservation){
+        return findVerifiedCounselor(reservation.getCounselorId()).getName();
+    }
+
+    public List<String> getCounselorNames(List<Reservation> reservations){
+        return reservations.stream()
+                .map(reservation -> findVerifiedCounselor(reservation.getCounselorId()).getName())
+                .collect(Collectors.toList());
     }
 }

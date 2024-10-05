@@ -25,9 +25,12 @@ public class MemberDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+        // (6) UserDetailsService 내부에서는 Credential 저장소 조회 (memberRepository.findByUserId() 이런 거 말하는거임)
         Optional<Member> optionalMember = memberRepository.findByUserId(userId);
         Member findMember = optionalMember.orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
 
+        // (7) UserDetails 생성
+        // (8) AuthenticationProvider로 UserDetails 반환
         return new MemberDetails(findMember);
     }
 

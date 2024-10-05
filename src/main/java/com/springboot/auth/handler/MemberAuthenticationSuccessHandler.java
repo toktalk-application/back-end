@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+// 이 코드는 securityConfiguration의 CustomFilterConfigurer에서 등록됨
 public class MemberAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // 로그인 인증 성공했을 때 실행
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         // CustomAuthentication 객체로 강제 캐스팅해서 보내기
