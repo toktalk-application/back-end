@@ -1,21 +1,11 @@
-package com.springboot.fcm.dto;
+package com.springboot.firebase.dto;
 
 import lombok.*;
 
 @Getter
-@ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
 public class FcmSendDto {
-    private String token;
-
     private String title;
-
-    private String body;
-
-    @Builder
-    public FcmSendDto(String token, String title, String body){
-        this.token = token;
-        this.title = title;
-        this.body = body;
-    }
+    private String message;
+    private String token;
 }
