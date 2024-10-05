@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/counselors")
@@ -110,8 +111,12 @@ public class CounselorController {
 
         if(date != null){ // date 파라미터를 넣었으면 특정일 조회
             List<Reservation> dailyReservations = reservationService.getDailyReservations(counselor, date);
+            List<String> counselorNames = dailyReservations.stream()
+                    .map(reservation -> counselorService.findCounselor(reservation.getCounselorId()).getName())
+                    .collect(Collectors.toList());
+
             return new ResponseEntity<>(
-                    new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(dailyReservations)), HttpStatus.OK
+                    new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(dailyReservations, counselorNames)), HttpStatus.OK
             );
         } else if (month != null) { // month 파라미터를 넣었으면 특정월 조회
             Map<LocalDate, Boolean> monthlyReservations = reservationService.getMonthlyReservations(counselor, month);

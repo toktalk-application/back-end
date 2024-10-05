@@ -1,11 +1,15 @@
 package com.springboot.response;
 
+import com.google.gson.Gson;
 import com.springboot.exception.ExceptionCode;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,6 +45,15 @@ public class ErrorResponse {
     }
     public static ErrorResponse of(HttpStatus httpStatus, String message){
         return new ErrorResponse(httpStatus.value(), message);
+    }
+    public static void sendErrorResponse(HttpServletResponse response,
+                                         HttpStatus httpStatus,
+                                         String message) throws IOException {
+        Gson gson = new Gson();
+        ErrorResponse errorResponse = ErrorResponse.of(httpStatus, message);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(httpStatus.value());
+        response.getWriter().write(gson.toJson(errorResponse, ErrorResponse.class));
     }
 
     @Getter
