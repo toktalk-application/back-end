@@ -57,6 +57,9 @@ public class Member {
     @ElementCollection
     private List<String> roles = new ArrayList<>();
 
+    @Column
+    private String fcmToken;
+
     @AllArgsConstructor
     public enum MemberStatus{
         ACTIVE,
