@@ -1,7 +1,9 @@
 package com.springboot.member.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.springboot.gender.Gender;
 import com.springboot.reservation.entity.Reservation;
+import com.springboot.testresult.entity.TestResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,6 +46,10 @@ public class Member {
 
     @OneToMany(mappedBy = "member")
     private List<Reservation> reservations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    @JsonManagedReference
+    private List<TestResult> testResults = new ArrayList<>();
 
     @Column
     @Enumerated(EnumType.STRING)

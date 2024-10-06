@@ -58,6 +58,6 @@ public class MemberDto {
     @Getter
     @Setter
     public static class Test {
-        private List<Integer> answers;
+        private int score;
     }
 }
