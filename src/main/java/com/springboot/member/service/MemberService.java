@@ -44,17 +44,6 @@ public class MemberService {
         return memberRepository.save(member);
     };
 
-    // 우울증 테스트 결과 생성
-    public void createTest(long memberId, MemberDto.Test testDto){
-        Member member = findVerifiedMember(memberId);
-
-        int totalScore = 0;
-        for(int score : testDto.getAnswers()){
-            totalScore += score;
-        }
-        member.setDepressionScore(totalScore);
-        memberRepository.save(member);
-    }
     public Member findMember(long memberId){
         return findVerifiedMember(memberId);
     }

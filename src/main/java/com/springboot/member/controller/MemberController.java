@@ -41,18 +41,6 @@ public class MemberController {
         return ResponseEntity.created(location).build();
     }
 
-    // 우울증 테스트
-    @PostMapping("/test")
-    public ResponseEntity<?> postTest(@RequestBody MemberDto.Test testDto,
-                                      Authentication authentication){
-        // Member만 테스트 가능
-        if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.MEMBER)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
-        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
-        memberService.createTest(memberId, testDto);
-
-        return new ResponseEntity<>(null, HttpStatus.CREATED);
-    }
-
     @GetMapping("/{memberId}")
     public ResponseEntity<?> getMember(@PathVariable long memberId,
                                                               Authentication authentication){
