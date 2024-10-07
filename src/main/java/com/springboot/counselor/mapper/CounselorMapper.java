@@ -8,11 +8,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = AvailableDateMapper.class)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CounselorMapper {
     Counselor counselorPostDtoToCounselor(CounselorDto.Post postDto);
     Counselor counselorPatchDtoToCounselor(CounselorDto.Patch patchDto);
@@ -45,7 +47,7 @@ public interface CounselorMapper {
                 counselor.getUserId(),
                 counselor.getCompany(),
                 availableDateList.stream()
-                        .map(date -> new AvailableDateDto(
+                        .map(date -> new AvailableDateDto.Response(
                                 date.getAvailableDateId(),
                                 date.getDate(),
                                 date.getAvailableTimes().entrySet().stream()
@@ -73,4 +75,14 @@ public interface CounselorMapper {
     };
     /*@Mapping(source = "availableDates", target = "availableDates")
     CounselorDto.Response counselorToCounselorResponseDto(Counselor counselor);*/
+
+    default List<String> defaultTimesToFormattedDefaultTimes(List<LocalTime> defaultTimes){
+        return defaultTimes.stream()
+                .map(time -> time.format(DateTimeFormatter.ofPattern("HH:mm")))
+                .collect(Collectors.toList());
+    }
+
+    AvailableDateDto.Response availableDateToAvailableDateDto(AvailableDate availableDate);
+
+    List<AvailableDateDto.Response> availableDatesToAvailableDateResponseDtos(List<AvailableDate> availableDates);
 }
