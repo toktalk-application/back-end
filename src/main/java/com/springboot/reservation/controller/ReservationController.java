@@ -73,7 +73,7 @@ public class ReservationController {
         Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
 
         return new ResponseEntity<>(
-                new SingleResponseDto<>(reservationMapper.reservationToReservationResponseDto(reservation, counselor.getName())), HttpStatus.OK
+                new SingleResponseDto<>(reservationMapper.reservationToReservationResponseDto(reservation)), HttpStatus.OK
         );
     }
 

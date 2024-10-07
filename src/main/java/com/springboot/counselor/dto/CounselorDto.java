@@ -48,8 +48,6 @@ public class CounselorDto {
         private String phone;
         private String company;
         private String name;
-        private List<License> licenses;
-        private List<Career> careers;
         private int chatPrice;
         private int callPrice;
     }

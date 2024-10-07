@@ -21,7 +21,7 @@ import java.util.Optional;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ReservationMapper {
     Reservation reservationPostDtoToReservation(ReservationDto.Post postDto);
-    default ReservationDto.Response reservationToReservationResponseDto(Reservation reservation, String counselorName){
+    default ReservationDto.Response reservationToReservationResponseDto(Reservation reservation){
         // 시작시간, 끝시간 구하기
         Reservation.TimePeriod timePeriod = reservation.getReservationTimePeriod();
         LocalTime startTime = timePeriod.getStartTime();
@@ -71,7 +71,7 @@ public interface ReservationMapper {
         }
         return response;*/
         for(int i = 0; i< reservations.size(); i++){
-            response.add(reservationToReservationResponseDto(reservations.get(i), counselorNames.get(i)));
+            response.add(reservationToReservationResponseDto(reservations.get(i)));
         }
         return response;
     }

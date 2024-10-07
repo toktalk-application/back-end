@@ -305,14 +305,4 @@ public class CounselorService {
         Optional<Counselor> optionalCounselor = counselorRepository.findByUserId(userId);
         return optionalMember.isEmpty() && optionalCounselor.isEmpty();
     }
-
-    public String getCounselorName(Reservation reservation){
-        return findVerifiedCounselor(reservation.getCounselorId()).getName();
-    }
-
-    public List<String> getCounselorNames(List<Reservation> reservations){
-        return reservations.stream()
-                .map(reservation -> findVerifiedCounselor(reservation.getCounselorId()).getName())
-                .collect(Collectors.toList());
-    }
 }
