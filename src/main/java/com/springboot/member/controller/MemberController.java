@@ -18,14 +18,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/members")
 @AllArgsConstructor
+@Validated
 public class MemberController {
     private final String MEMBER_DEFAULT_URL = "/members";
     private final MemberService memberService;
@@ -33,7 +36,7 @@ public class MemberController {
 
     // 회원가입
     @PostMapping
-    public ResponseEntity<?> postMember(@RequestBody MemberDto.Post postDto){
+    public ResponseEntity<?> postMember(@RequestBody @Valid MemberDto.Post postDto){
         Member tempMember = memberMapper.memberPostDtoToMember(postDto);
         Member member = memberService.createMember(tempMember);
         URI location = UriCreator.createUri(MEMBER_DEFAULT_URL, member.getMemberId());
