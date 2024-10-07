@@ -20,7 +20,7 @@ public class TestResult {
 
     @ManyToOne
     @JoinColumn(name = "member_id")
-    @JsonBackReference
+    @JsonBackReference("member-testresult")
     private Member member;
 
     @Column(nullable = false)

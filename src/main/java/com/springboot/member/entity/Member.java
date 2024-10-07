@@ -1,6 +1,7 @@
 package com.springboot.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.springboot.chat.entity.ChatRoom;
 import com.springboot.gender.Gender;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.testresult.entity.TestResult;
@@ -48,8 +49,12 @@ public class Member {
     private List<Reservation> reservations = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
-    @JsonManagedReference
+    @JsonManagedReference("member-testresult")
     private List<TestResult> testResults = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    @JsonManagedReference("member-chatroom")
+    private List<ChatRoom> chatRooms = new ArrayList<>();
 
     @Column
     @Enumerated(EnumType.STRING)
