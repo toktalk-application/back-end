@@ -62,6 +62,12 @@ public class MemberService {
                     if(passwordEncoder.matches(password, realMember.getPassword())) throw new BusinessLogicException(ExceptionCode.SAME_PASSWORD);
                     realMember.setPassword(passwordEncoder.encode(password));
                 });
+        Optional.ofNullable(member.getNickname())
+                .ifPresent(nickname -> {
+                    // 중복 닉네임 검사
+                    if(!isNicknameAvailable(nickname)) throw new BusinessLogicException(ExceptionCode.DUPLICATED_NICKNAME);
+                    realMember.setNickname(nickname);
+                });
         return memberRepository.save(realMember);
     }
 
