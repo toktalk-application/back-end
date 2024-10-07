@@ -1,0 +1,55 @@
+package com.springboot.chat.controller;
+
+import com.springboot.chat.dto.ChatRoomDto;
+import com.springboot.chat.entity.ChatRoom;
+import com.springboot.chat.mapper.ChatLogMapper;
+import com.springboot.chat.mapper.ChatRoomMapper;
+import com.springboot.chat.service.ChatRoomService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.Positive;
+
+@RestController
+@RequestMapping("/chat_rooms")
+@Validated
+public class ChatRoomController {
+    private final ChatRoomService chatRoomService;
+    private final ChatRoomMapper chatRoomMapper;
+    private final ChatLogMapper chatLogMapper;
+
+    public ChatRoomController(ChatRoomService chatRoomService, ChatRoomMapper chatRoomMapper, ChatLogMapper chatLogMapper) {
+        this.chatRoomService = chatRoomService;
+        this.chatRoomMapper = chatRoomMapper;
+        this.chatLogMapper = chatLogMapper;
+    }
+    @PostMapping("/open")
+    public ResponseEntity<ChatRoomDto.Response> openChatRoom(@RequestParam long memberId, Authentication authentication) {
+        ChatRoom chatRoom = chatRoomService.createOrGetChatRoom(memberId, authentication);
+        ChatRoomDto.Response responseDto = chatRoomMapper.chatRoomToChatRoomResponseDto(chatRoom, chatLogMapper);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PatchMapping("/{room-id}/close")
+    public ResponseEntity<ChatRoomDto.Response> closeChatRoom(@PathVariable("room-id") @Positive long roomId,
+                                                              Authentication authentication) {
+        ChatRoom chatRoom = chatRoomService.closeChatRoom(roomId, authentication);
+        ChatRoomDto.Response responseDto = chatRoomMapper.chatRoomToChatRoomResponseDto(chatRoom, chatLogMapper);
+        return ResponseEntity.ok(responseDto);
+    }
+
+//    @GetMapping("{room-id}")
+//    public ResponseEntity getChatRoom(@PathVariable("room-id") @Positive long roomId,
+//                                      Authentication authentication) {
+//
+//    }
+//
+//    @GetMapping
+//    public ResponseEntity getChatRooms(@Positive @RequestParam int page,
+//                                       @Positive @RequestParam int size,
+//                                       Authentication authentication) {
+//
+//    }
+}
