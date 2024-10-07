@@ -165,7 +165,7 @@ public class ReservationService {
     }
 
     // 예약 취소 (COUNSELOR)
-    public void cancelReservationByCounselor(long reservationId, int cancelReason){
+    public void cancelReservationByCounselor(long reservationId, String cancelReason){
         // 예약 정보 찾기
         Reservation reservation = findReservation(reservationId);
         // 취소는 최소 24시간 전
@@ -181,7 +181,8 @@ public class ReservationService {
         // 예약 상태 바꾸기
         reservation.setReservationStatus(Reservation.ReservationStatus.CANCELLED_BY_COUNSELOR);
         // 취소 사유 등록
-        switch (cancelReason){
+        reservation.setCancelComment(cancelReason);
+        /*switch (cancelReason){
             case 1:
                 reservation.setCancelComment("ㅈㅅ");
                 break;
@@ -191,15 +192,9 @@ public class ReservationService {
             case 3:
                 reservation.setCancelComment("ㅈㅅ ㅋㅋ");
                 break;
-            case 4:
-                reservation.setCancelComment("ㅈㅅ ㅋㅋㅋ");
-                break;
-            case 5:
-                reservation.setCancelComment("ㅈㅅ ㅋㅋㅋㅋ");
-                break;
             default:
                 throw new BusinessLogicException(ExceptionCode.INVALID_CANCLE_REASON);
-        }
+        }*/
         // 바뀐 상태 저장하고 리턴
         reservationRepository.save(reservation);
     }
