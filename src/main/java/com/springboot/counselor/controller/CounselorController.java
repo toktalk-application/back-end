@@ -21,8 +21,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/counselors")
 @AllArgsConstructor
+@Validated
 public class CounselorController {
     private final String DEFAULT_URL = "/counselors";
     private final CounselorMapper counselorMapper;
@@ -43,7 +46,7 @@ public class CounselorController {
 
     // 상담사 회원 가입
     @PostMapping
-    public ResponseEntity<?> postCounselor(@RequestBody CounselorDto.Post postDto){
+    public ResponseEntity<?> postCounselor(@RequestBody @Valid CounselorDto.Post postDto){
         Counselor tempCounselor = counselorMapper.counselorPostDtoToCounselor(postDto);
         Counselor savedCounselor = counselorService.createCounselor(tempCounselor, postDto);
 
