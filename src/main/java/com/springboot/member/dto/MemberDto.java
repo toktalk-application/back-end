@@ -35,6 +35,7 @@ public class MemberDto {
     @Setter
     public static class Patch{
         private String password;
+        private String nickname;
     }
 
     @NoArgsConstructor
