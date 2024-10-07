@@ -34,7 +34,9 @@ public class MemberDto {
     @Getter
     @Setter
     public static class Patch{
+        @Pattern(regexp = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\\W)(?=\\S+$).{10,20}", message = "비밀번호는 영문 대소문자와 숫자, 특수문자를 포함하여 10~20글자로 작성해야 합니다.")
         private String password;
+        @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-zA-Z0-9]{2,10}$", message = "닉네임은 영문 및 한글 또는 숫자로만 입력해야 합니다. (2~10자)")
         private String nickname;
     }
 
