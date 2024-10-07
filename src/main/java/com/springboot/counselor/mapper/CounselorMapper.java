@@ -57,8 +57,8 @@ public interface CounselorMapper {
                                                     AvailableTime time = entry.getValue();
                                                     return new AvailableTimeDto(
                                                             time.getAvailableTimeId(),
-                                                            time.getStartTime(),
-                                                            time.getEndTime(),
+                                                            time.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                                            time.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")),
                                                             time.getReservation() != null
                                                     );
                                                 }
@@ -84,7 +84,25 @@ public interface CounselorMapper {
                 .collect(Collectors.toList());
     }
 
-    AvailableDateDto.Response availableDateToAvailableDateDto(AvailableDate availableDate);
+    default AvailableDateDto.Response availableDateToAvailableDateDto(AvailableDate availableDate){
+        return new AvailableDateDto.Response(
+                availableDate.getAvailableDateId(),
+                availableDate.getDate(),
+                availableDate.getAvailableTimes().entrySet().stream()
+                        .collect(Collectors.toMap(
+                                entry -> entry.getKey(),
+                                entry -> {
+                                    AvailableTime time = entry.getValue();
+                                    return new AvailableTimeDto(
+                                            time.getAvailableTimeId(),
+                                            time.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                            time.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                            time.getReservation() != null
+                                    );
+                                }
+                        ))
+        );
+    };
 
     List<AvailableDateDto.Response> availableDatesToAvailableDateResponseDtos(List<AvailableDate> availableDates);
 }
