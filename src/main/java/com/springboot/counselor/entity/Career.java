@@ -38,7 +38,7 @@ public class Career {
     public void setCounselor(Counselor counselor){
         this.counselor = counselor;
         if(!counselor.getCareers().contains(this)){
-            counselor.getCareers().add(this);
+            counselor.addCareer(this);
         }
     }
 }
