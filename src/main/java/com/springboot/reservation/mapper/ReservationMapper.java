@@ -16,6 +16,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ReservationMapper {
@@ -42,10 +43,16 @@ public interface ReservationMapper {
             reportDto = new ReservationDto.Report(report.getContent(), report.getCreatedAt());
         }
 
+        Optional<Integer> depressionScoreOptional = Optional.ofNullable(reservation.getMember().getDepressionScore());
+        int depressionScore = depressionScoreOptional.orElse(-1);
+
         return new ReservationDto.Response(
                 reservation.getReservationId(),
                 reservation.getCounselorId(),
                 reservation.getMember().getNickname(),
+                reservation.getMember().getBirth().getYear(),
+                reservation.getMember().getGender(),
+                depressionScore == -1 ? "없음" : String.valueOf(depressionScore),
                 reservation.getCounselorName(),
                 reservation.getComment(),
                 reservation.getType(),
