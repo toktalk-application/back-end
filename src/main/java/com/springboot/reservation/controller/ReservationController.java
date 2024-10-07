@@ -100,7 +100,7 @@ public class ReservationController {
     // 예약 취소 (회원, 상담사 모두 가능)
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<?> cancelReservation(@PathVariable long reservationId,
-                                            @RequestParam(required = false) Integer cancelReason,
+                                            @RequestParam(required = false) String cancelReason,
                                             Authentication authentication){
         CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
 
