@@ -72,7 +72,7 @@ public class CounselorDto {
         private String name;
         private String userId;
         private String company;
-        private List<AvailableDateDto> availableDates;
+        private List<AvailableDateDto.Response> availableDates;
         private int chatPrice;
         private int callPrice;
         private List<CareerDto.Response> careers;

@@ -3,6 +3,7 @@ package com.springboot.counselor.service;
 import com.springboot.auth.utils.CustomAuthorityUtils;
 import com.springboot.counselor.available_date.AvailableDate;
 import com.springboot.counselor.available_date.AvailableTime;
+import com.springboot.counselor.dto.AvailableDateDto;
 import com.springboot.counselor.dto.CareerDto;
 import com.springboot.counselor.dto.CounselorDto;
 import com.springboot.counselor.dto.LicenseDto;
@@ -15,6 +16,7 @@ import com.springboot.member.repository.MemberRepository;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.utils.CalendarUtil;
 import com.springboot.utils.IntValidationUtil;
+import com.springboot.utils.TimeUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -111,15 +113,15 @@ public class CounselorService {
     public void addCareer(long counselorId, List<CareerDto.Post> postDtos){
         Counselor counselor = findVerifiedCounselor(counselorId);
         // 3개 넘개는 추가 안됨
-        if(counselor.getLicenses().size() + postDtos.size() > 3) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
+        if(counselor.getCareers().size() + postDtos.size() > 3) throw new BusinessLogicException(ExceptionCode.CAREER_AMOUNT_VIOLATION);
 
         // 경력사항 등록
         postDtos.forEach(postDto -> {
             Career career = new Career();
-            career.setCounselor(counselor);
             career.setCompany(postDto.getCompany());
             career.setResponsibility(postDto.getResponsibility());
             career.setClassification(postDto.getClassification());
+            career.setCounselor(counselor); // Counselor <-> Career 양방향 set 메서드
         });
         counselor.setModifiedAt(LocalDateTime.now());
     }
@@ -160,18 +162,9 @@ public class CounselorService {
         List<LocalTime> currentTimes = counselor.getDefaultDays().get(dto.getDayOfWeek()).getStartTimes();
         List<LocalTime> newTimes = dto.getTimes();
 
-        Set<LocalTime> additions = new HashSet<>(newTimes);     // currentTimes에는 없고, newTimes에는 있음
-        Set<LocalTime> unchanged = new HashSet<>();             // 양쪽에 다 있음
-        Set<LocalTime> removes = new HashSet<>(currentTimes);   // currentTimes에는 있고, newTimes에는 없음
-
-        // 각각을 순회하면서 양쪽에 다 있는 경우에만 unchanged에 추가
-        for (LocalTime time : currentTimes) {
-            if (newTimes.contains(time)) {                      // 순회가 끝나면 최종적으로
-                unchanged.add(time);                            // unchanged = unchanged
-                additions.remove(time);                         // additions = newTimes - unchanged
-                removes.remove(time);                           // removes = currentTimes - unchanged 가 됨
-            }
-        }
+        TimeUtils.TimeComparisonResult comparisonResult = TimeUtils.compare(currentTimes, newTimes);
+        Set<LocalTime> additions = comparisonResult.getAdditions();
+        Set<LocalTime> removes = comparisonResult.getRemoved();
 
         // 해당 요일에 대해 Counselor의 Default 상담시간 업데이트
         DefaultDay defaultDay = counselor.getDefaultDays().get(dto.getDayOfWeek());
@@ -255,6 +248,41 @@ public class CounselorService {
                 date.getAvailableTimes().remove(remove);
             }
         }
+        counselorRepository.save(counselor);
+    }
+    // 특정 날짜에 대한 AvailableDate 조회
+    public AvailableDate getAvailableDate(long counselorId, LocalDate date){
+        Counselor counselor = findVerifiedCounselor(counselorId);
+
+        Optional<AvailableDate> optionalAvailableDate = Optional.ofNullable(counselor.getAvailableDate(date));
+        return optionalAvailableDate.orElseThrow(() -> new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE));
+    }
+    // 특정 날짜에 대한 AvailableDate 수정
+    public void updateAvailableDate(long counselorId, AvailableDateDto.Patch patchDto){
+        LocalDate date = patchDto.getDate();
+        Counselor counselor = findVerifiedCounselor(counselorId);
+        AvailableDate availableDate = counselor.getAvailableDate(date);
+        // 먼저 해당일의 AvailableTimes를 가져옴
+        Map<LocalTime, AvailableTime> availableTimes = counselor.getAvailableDate(date).getAvailableTimes();
+        List<LocalTime> currentTimes = new ArrayList<>(availableTimes.keySet());
+        // 뭐가 추가된 것이고 삭제된 것인지 판별
+        TimeUtils.TimeComparisonResult comparisonResult = TimeUtils.compare(currentTimes, patchDto.getTimes());
+        // 추가된 건 새로 만들어서 넣기
+        comparisonResult.getAdditions().forEach(time -> {
+            AvailableTime availableTime = new AvailableTime();
+            availableTime.setStartTime(time);
+            availableTime.setEndTime(time.plusMinutes(50));
+            availableTime.setAvailableDate(availableDate); // AvailableDate <-> AvailableTime 양방향 set메서드
+        });
+        // 삭제된 건 제거
+        comparisonResult.getRemoved().forEach(time -> {
+            AvailableTime availableTime = availableDate.getAvailableTimes().get(time);
+            // 예약 있으면 제거 불가
+            if(availableTime.getReservation() != null) throw new BusinessLogicException(ExceptionCode.TIMESLOT_DELETION_DENIED);
+            // 예약 없으면 제거 진행
+            availableDate.getAvailableTimes().remove(time);
+        });
+        // 변경사항 저장
         counselorRepository.save(counselor);
     }
 

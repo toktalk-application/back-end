@@ -2,6 +2,8 @@ package com.springboot.counselor.controller;
 
 import com.springboot.auth.CustomAuthenticationToken;
 import com.springboot.auth.dto.LoginDto;
+import com.springboot.counselor.available_date.AvailableDate;
+import com.springboot.counselor.dto.AvailableDateDto;
 import com.springboot.counselor.dto.CareerDto;
 import com.springboot.counselor.dto.CounselorDto;
 import com.springboot.counselor.dto.LicenseDto;
@@ -107,8 +109,8 @@ public class CounselorController {
     @GetMapping("/{counselorId}/reservations")
     public ResponseEntity<?> getReservations(/*Authentication authentication,*/
                                                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                                                                         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
-                                                                         @PathVariable long counselorId){
+                                                                  @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
+                                                                  @PathVariable long counselorId){
         // 상담사 찾아오기
         Counselor counselor = counselorService.findCounselor(counselorId);
 
@@ -189,7 +191,7 @@ public class CounselorController {
         List<LocalTime> times = counselorService.getDefaultTimesOfDay(counselorId, dayOfWeek);
 
         return new ResponseEntity<>(
-                new SingleResponseDto<>(times), HttpStatus.OK
+                new SingleResponseDto<>(counselorMapper.defaultTimesToFormattedDefaultTimes(times)), HttpStatus.OK
         );
     }
 
@@ -200,6 +202,29 @@ public class CounselorController {
         Counselor findCounselor = counselorService.findCounselor(counselorId);
         return new ResponseEntity<>(
                 new SingleResponseDto<>(counselorMapper.counselorToCounselorResponseDto(findCounselor)), HttpStatus.OK
+        );
+    }
+
+    // 자신의 특정일 상담 슬롯 조회
+    @GetMapping("/available-dates")
+    public ResponseEntity<?> getAvailableDate(Authentication authentication,
+                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        AvailableDate availableDate = counselorService.getAvailableDate(counselorId, date);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(counselorMapper.availableDateToAvailableDateDto(availableDate)), HttpStatus.OK
+        );
+    }
+
+    // 자신의 특정일 상담 슬롯 변경
+    @PatchMapping("/available-dates")
+    public ResponseEntity<?> patchAvailableDate(Authentication authentication,
+                                                @RequestBody AvailableDateDto.Patch patchDto){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        counselorService.updateAvailableDate(counselorId, patchDto);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(null), HttpStatus.OK
         );
     }
 }
