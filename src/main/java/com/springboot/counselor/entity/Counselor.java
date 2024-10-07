@@ -64,6 +64,18 @@ public class Counselor {
     @Column
     private int callPrice = 50000;
 
+    @Column
+    private String profileImage;
+
+    @Column
+    private String introduction;
+
+    @Column
+    private String expertise;
+
+    @Column
+    private String sessionDescription;
+
     @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
     private Map<LocalDate, AvailableDate> availableDates = new HashMap();
 

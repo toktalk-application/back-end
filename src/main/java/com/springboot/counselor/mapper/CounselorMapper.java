@@ -73,6 +73,8 @@ public interface CounselorMapper {
                 counselor.getModifiedAt()
         );
     };
+    List<CounselorDto.Response> counselorsToCounselorResponseDtos(List<Counselor> counselors);
+
     /*@Mapping(source = "availableDates", target = "availableDates")
     CounselorDto.Response counselorToCounselorResponseDto(Counselor counselor);*/
 

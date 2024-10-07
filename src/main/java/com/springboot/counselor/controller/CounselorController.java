@@ -27,6 +27,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.net.URI;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -110,7 +111,7 @@ public class CounselorController {
     public ResponseEntity<?> getReservations(/*Authentication authentication,*/
                                                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
-                                                                  @PathVariable long counselorId){
+                                                                  @PathVariable @Positive long counselorId){
         // 상담사 찾아오기
         Counselor counselor = counselorService.findCounselor(counselorId);
 
@@ -197,11 +198,19 @@ public class CounselorController {
 
     // 단일 상담사 조회
     @GetMapping("/{counselorId}")
-    public ResponseEntity<?> getCounselor(@PathVariable long counselorId
+    public ResponseEntity<?> getCounselor(@PathVariable @Positive long counselorId
                                           /*,Authentication authentication*/){
         Counselor findCounselor = counselorService.findCounselor(counselorId);
         return new ResponseEntity<>(
                 new SingleResponseDto<>(counselorMapper.counselorToCounselorResponseDto(findCounselor)), HttpStatus.OK
+        );
+    }
+    // 활동중인 전체 상담사 조회
+    @GetMapping
+    public ResponseEntity<?> getCounselors(/*Authentication authentication*/){
+        List<Counselor> activeCounselors = counselorService.getAllActiveCounselors();
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(counselorMapper.counselorsToCounselorResponseDtos(activeCounselors)), HttpStatus.OK
         );
     }
 
