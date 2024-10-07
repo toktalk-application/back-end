@@ -50,6 +50,10 @@ public class CounselorDto {
         private String name;
         private int chatPrice;
         private int callPrice;
+        private String profileImage;
+        private String introduction;
+        private String expertise;
+        private String sessionDescription;
     }
     @AllArgsConstructor
     @NoArgsConstructor

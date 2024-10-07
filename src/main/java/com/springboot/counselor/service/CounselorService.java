@@ -315,15 +315,23 @@ public class CounselorService {
                     realCounselor.setPassword(passwordEncoder.encode(password));
                 });
         Optional.ofNullable(counselor.getPhone())
-                .ifPresent(phone -> realCounselor.setPhone(phone));
+                        .ifPresent(phone -> realCounselor.setPhone(phone));
         Optional.ofNullable(counselor.getCompany())
-                .ifPresent(company -> realCounselor.setCompany(company));
+                        .ifPresent(company -> realCounselor.setCompany(company));
         Optional.ofNullable(counselor.getName())
-                .ifPresent(name -> realCounselor.setName(name));
+                        .ifPresent(name -> realCounselor.setName(name));
         Optional.ofNullable(counselor.getChatPrice())
-                .ifPresent(chatprice -> realCounselor.setChatPrice(chatprice));
+                        .ifPresent(chatprice -> realCounselor.setChatPrice(chatprice));
         Optional.ofNullable(counselor.getCallPrice())
-                .ifPresent(callprice -> realCounselor.setCallPrice(callprice));
+                        .ifPresent(callprice -> realCounselor.setCallPrice(callprice));
+        Optional.ofNullable(counselor.getProfileImage())
+                        .ifPresent(profileImage -> counselor.setProfileImage(profileImage));
+        Optional.ofNullable(counselor.getIntroduction())
+                        .ifPresent(introduction -> counselor.setIntroduction(introduction));
+        Optional.ofNullable(counselor.getExpertise())
+                        .ifPresent(expertise -> counselor.setExpertise(expertise));
+        Optional.ofNullable(counselor.getSessionDescription())
+                        .ifPresent(sessionDescription -> counselor.setSessionDescription(sessionDescription));
 
         counselor.setModifiedAt(LocalDateTime.now());
         return counselorRepository.save(realCounselor);
@@ -332,5 +340,12 @@ public class CounselorService {
         Optional<Member> optionalMember = memberRepository.findByUserId(userId);
         Optional<Counselor> optionalCounselor = counselorRepository.findByUserId(userId);
         return optionalMember.isEmpty() && optionalCounselor.isEmpty();
+    }
+    // 전체 상담사 조회
+    public List<Counselor> getAllActiveCounselors(){
+        List<Counselor> counselors = counselorRepository.findAll();
+        return counselors.stream()
+                .filter(counselor -> counselor.getCounselorStatus().equals(Counselor.Status.ACTIVE))
+                .collect(Collectors.toList());
     }
 }
