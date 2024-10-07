@@ -23,6 +23,8 @@ public enum ExceptionCode {
     TEST_RESULT_NOT_FOUND(404, "TestResult not found"),
     COUNSELOR_NOT_FOUND(404, "Counselor not found"),
     RESERVATION_NOT_FOUND(404, "Reservation not found"),
+    CHAT_ROOM_NOT_FOUND(404,"ChatRoom not found"),
+    CHAT_ROOM_CLOSED(404,"ChatRoom is close"),
     UNAVAILABLE_DATE(404, "Reservation date is not available"),
     UNAVAILABLE_TIME(404, "Reservation time is not available"),
     LICENSE_NOT_FOUND(404, "License not found"),

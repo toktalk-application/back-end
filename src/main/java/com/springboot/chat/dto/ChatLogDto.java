@@ -1,4 +1,4 @@
-package com.springboot.testresult.dto;
+package com.springboot.chat.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,21 +6,21 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-public class TestResultDto {
+public class ChatLogDto {
     @Builder
     @Getter
     @Setter
     public static class Post {
-        private long memberId;
-        private int score;
+        private String message;
+        private String sender;
     }
     @Builder
     @Getter
     @Setter
     public static class Response {
-        private int score;
-        private String description;
-        private String comment;
+        private long logId;
+        private String sender;
+        private String message;
         private LocalDateTime createdAt;
     }
 }
