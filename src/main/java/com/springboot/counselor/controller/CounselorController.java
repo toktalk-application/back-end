@@ -106,34 +106,6 @@ public class CounselorController {
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
-    // 특정 상담사에 대한 특정일 또는 월별 예약 정보 조회
-    @GetMapping("/{counselorId}/reservations")
-    public ResponseEntity<?> getReservations(/*Authentication authentication,*/
-                                                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                                                                  @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
-                                                                  @PathVariable @Positive long counselorId){
-        // 상담사 찾아오기
-        Counselor counselor = counselorService.findCounselor(counselorId);
-
-        if(date != null){ // date 파라미터를 넣었으면 특정일 조회
-            List<Reservation> dailyReservations = reservationService.getDailyReservations(counselor, date);
-            List<String> counselorNames = dailyReservations.stream()
-                    .map(reservation -> counselorService.findCounselor(reservation.getCounselorId()).getName())
-                    .collect(Collectors.toList());
-
-            return new ResponseEntity<>(
-                    new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(dailyReservations, counselorNames)), HttpStatus.OK
-            );
-        } else if (month != null) { // month 파라미터를 넣었으면 특정월 조회
-            Map<LocalDate, Boolean> monthlyReservations = reservationService.getMonthlyReservations(counselor, month);
-            return new ResponseEntity<>(
-                    new SingleResponseDto<>(monthlyReservations), HttpStatus.OK
-            );
-        }
-        // 쿼리 파라미터를 아무것도 안 넣었을 때
-        throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
-    }
-
     // 상담사 프로필 수정
     @PatchMapping
     public ResponseEntity<?> patchCounselor(Authentication authentication,

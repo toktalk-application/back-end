@@ -10,6 +10,7 @@ public enum ExceptionCode {
     INVALID_CANCLE_REASON(400, "Invalid cancel reason"),
     LICENSE_AMOUNT_VIOLATION(400, "The amount of licenses must be between 1 and 3"),
     CAREER_AMOUNT_VIOLATION(400, "The amount of careers must be between 1 and 3"),
+    INVALID_MONTH(400, "The month must be between 1 and 12"),
     ACCESS_DENIED(403,"Access denied"),
     INVALID_USERTYPE(403, "Invalid usertype"),
     UNMATCHED_MEMBER(403, "Member id is not match"),
