@@ -64,7 +64,7 @@ public interface ReservationMapper {
                 reportDto
         );
     };
-    default List<ReservationDto.Response> reservationsToReservationResponseDtos(List<Reservation> reservations, List<String> counselorNames){
+    default List<ReservationDto.Response> reservationsToReservationResponseDtos(List<Reservation> reservations){
         List<ReservationDto.Response> response = new ArrayList<>();
         /*for (Reservation reservation : reservations) {
             response.add(reservationToReservationResponseDto(reservation, counselorNames));
