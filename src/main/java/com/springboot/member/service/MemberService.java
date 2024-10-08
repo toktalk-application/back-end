@@ -26,7 +26,6 @@ public class MemberService {
     private CounselorRepository counselorRepository;
     private PasswordEncoder passwordEncoder;
     private CustomAuthorityUtils customAuthorityUtils;
-    private ReservationService reservationService;
 
     public Member createMember(Member member){
         if(!isUserIdAvailable(member.getUserId())){

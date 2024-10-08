@@ -6,11 +6,12 @@ import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.member.entity.Member;
+import com.springboot.member.service.MemberService;
 import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.entity.Review;
-import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.utils.CalendarUtil;
 import com.springboot.utils.CredentialUtil;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final CounselorService counselorService;
-    private final ReservationMapper reservationMapper;
+    private final MemberService memberService;
 
     // 상담 예약 등록
     public Reservation createReservation(Reservation reservation, LocalDate date, List<LocalTime> startTimes){
@@ -104,8 +105,41 @@ public class ReservationService {
         reservationRepository.save(reservation);
     }
 
+    // 특정 회원이 특정 날짜에 잡은 예약 목록 조회
+    public List<Reservation> getDailyReservationsByMember(long memberId, LocalDate date){
+        Member member = memberService.findMember(memberId);
+        List<Reservation> reservations = reservationRepository.findByMember(member);
+
+        return reservations.stream()
+                .filter(reservation -> reservation.getReservationTimes().get(0).getAvailableDate().getDate().equals(date))
+                .collect(Collectors.toList());
+    }
+
+    // 특정 회원의 한 달간 각 날짜별로, 예약을 잡은 날인지 여부 조회
+    public Map<LocalDate, Boolean> getMonthlyReservationsByMember(long memberId, YearMonth month){
+        Member member = memberService.findMember(memberId);
+
+        List<Reservation> reservations = reservationRepository.findByMember(member).stream()
+                .filter(reservation -> {
+                    LocalDate date = reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+                    return CalendarUtil.isLocalDateInYearMonth(date, month);
+                }).collect(Collectors.toList());
+
+        // 각 날짜별로 예약이 있는지 알아보기
+        Map<LocalDate, Boolean> monthlyReservations = new HashMap<>();
+        reservations.forEach(reservation -> {
+            LocalDate reservationDate = reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+            if(!monthlyReservations.containsKey(reservationDate)){
+                monthlyReservations.put(reservationDate, true);
+            }
+        });
+        return monthlyReservations;
+    }
+
     // 특정 상담사의 특정 날짜에 잡힌 예약 목록 조회
-    public List<Reservation> getDailyReservations(Counselor counselor, LocalDate date){
+    public List<Reservation> getDailyReservationsWithCounselor(long counselorId, LocalDate date){
+        Counselor counselor = counselorService.findCounselor(counselorId);
+
         Set<Reservation> reservations = new HashSet<>();
         counselor.getAvailableDate(date).getAvailableTimes().values().forEach(time -> {
             if(time.getReservation() != null){
@@ -116,7 +150,9 @@ public class ReservationService {
     }
 
     // 특정 상담사의 한 달간 각 날짜별로, 예약이 있는 날인지 여부 조회
-    public Map<LocalDate, Boolean> getMonthlyReservations(Counselor counselor, YearMonth month){
+    public Map<LocalDate, Boolean> getMonthlyReservationsWithCounselor(long counselorId, YearMonth month){
+        Counselor counselor = counselorService.findCounselor(counselorId);
+
         // 해당 월의 날짜들 구하기
         List<LocalDate> dates = CalendarUtil.getMonthDates(month);
 
