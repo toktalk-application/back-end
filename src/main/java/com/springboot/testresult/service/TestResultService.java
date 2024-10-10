@@ -37,7 +37,7 @@ public class TestResultService {
 
         setTestLevelAndComment(testResult);
 
-        return testResult;
+        return testResultRepository.save(testResult);
     }
 
     public Page<TestResult> findTestResults(int page, int size, Authentication authentication) {
@@ -77,7 +77,7 @@ public class TestResultService {
             testResult.setTestLevel(TestResult.TestLevel.SEVERE);
             testResult.setComment("광범위한 우울 증상을 매우 자주, 심한 수준에서 경험하는 것으로 보고하였습니다. 일상생활의 다양한 영역에서 어려움이 초래될 경우, 추가적인 평가나 정신건강 전문가의 도움을 받아보시기를 권해 드립니다.");
         } else {
-            throw new IllegalArgumentException("Invalid score range: " + score);
+            throw new BusinessLogicException(ExceptionCode.INVALID_SCORE);
         }
     }
     private TestResult verifiedExistTestResult(long testResultId) {
