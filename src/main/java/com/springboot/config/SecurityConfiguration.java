@@ -64,15 +64,22 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         // 여기에 경로 지정 안 된 요청들은 accessDeniedHandler가 적용 안 됨
                         // 그래서 토큰 안 넣으면 500 에러가 뜸. 처리되지 않은 예외이기 때문에
-                        /*.antMatchers(HttpMethod.POST,"/members").permitAll()
-                        .antMatchers(HttpMethod.PATCH,"/members/**").hasAnyRole("USER","ADMIN")
-                        .antMatchers(HttpMethod.GET,"/members").hasAnyRole("USER", "ADMIN")
-                        .antMatchers(HttpMethod.GET,"/members/**").hasAnyRole("USER","ADMIN")
-                        .antMatchers(HttpMethod.DELETE,"/members/**").hasRole("USER")
-                        .antMatchers(HttpMethod.POST, "/answers/**").hasRole("ADMIN")
-                        .antMatchers(HttpMethod.PATCH,"/answers/**").hasRole("ADMIN")
-                        .antMatchers(HttpMethod.DELETE,"/answers/**").hasRole("ADMIN")*/
+                        .antMatchers(HttpMethod.POST, "/members").permitAll()
+                        .antMatchers(HttpMethod.POST, "/members/**").hasRole("USER")
+                        .antMatchers(HttpMethod.GET, "/members").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.GET, "/members/**").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.PATCH, "/members").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.DELETE, "/members").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.POST, "/counselors").permitAll()
+                        .antMatchers(HttpMethod.POST, "/counselors/**").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.GET, "/counselors").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.GET, "/counselors/**").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.PATCH, "/counselors").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.DELETE, "/counselors").hasAnyRole("USER", "ADMIN")
                         .antMatchers(HttpMethod.POST, "/reservations").hasRole("USER")
+                        .antMatchers(HttpMethod.GET, "/reservations").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.GET, "/reservations/**").hasAnyRole("USER", "ADMIN")
+                        .antMatchers(HttpMethod.DELETE, "/reservation").hasRole("USER")
                         .anyRequest().permitAll()
                 );
         return http.build();

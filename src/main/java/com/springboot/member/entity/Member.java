@@ -13,7 +13,9 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -44,6 +46,9 @@ public class Member {
 
     @Column
     private Integer depressionScore = null;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Map<LocalDate, DailyMood> dailyMoods = new HashMap<>();
 
     @OneToMany(mappedBy = "member")
     private List<Reservation> reservations = new ArrayList<>();
@@ -82,5 +87,12 @@ public class Member {
         if(reservation.getMember() == null){
             reservation.setMember(this);
         }
+    }
+
+    public void addDailyMood(LocalDate date, DailyMood dailyMood){
+        dailyMoods.put(date, dailyMood);
+        if(dailyMood.getMember() == null) {
+            dailyMood.setMember(this);
+        };
     }
 }
