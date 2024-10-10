@@ -25,6 +25,5 @@ public class LicenseDto {
         private long licenseId;
         private String licenseName;
         private String organization;
-        private LocalDate issueDate;
     }
 }
