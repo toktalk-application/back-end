@@ -8,7 +8,9 @@ import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
+import com.springboot.reservation.dto.ReportDto;
 import com.springboot.reservation.dto.ReservationDto;
+import com.springboot.reservation.dto.ReviewDto;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.service.ReservationService;
@@ -135,9 +137,9 @@ public class ReservationController {
     // 리뷰 등록
     @PostMapping("/{reservationId}/reviews")
     public ResponseEntity<?> postReview(@PathVariable long reservationId,
-                                        @RequestBody ReservationDto.Review reviewDto,
+                                        @RequestBody ReviewDto.Post reviewDto,
                                         Authentication authentication){
-        reservationService.registerReview(reservationId, reviewDto, authentication);
+        reservationService.registerReview(reservationId, reservationMapper.reviewPostDToToReview(reviewDto), authentication);
 
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
@@ -145,10 +147,10 @@ public class ReservationController {
     // 상담사 진단 등록
     @PostMapping("/{reservationId}/reports")
     public ResponseEntity<?> postReport(@PathVariable long reservationId,
-                                        @RequestBody ReservationDto.Report reportDto,
+                                        @RequestBody ReportDto.Post reportDto,
                                         Authentication authentication
                                         ){
-        reservationService.registerReport(reservationId, reportDto, authentication);
+        reservationService.registerReport(reservationId, reservationMapper.reportPostDtoToReport(reportDto), authentication);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 

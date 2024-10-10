@@ -58,7 +58,7 @@ public class MemberController {
     }
 
     // 닉네임 중복 체크
-    @GetMapping("/check-id-availabilities")
+    @GetMapping("/nickname-availabilities")
     public ResponseEntity<?> checkNicknameAvailability(@RequestParam String nickname){
         return new ResponseEntity<>(
                 new SingleResponseDto<>(memberService.isNicknameAvailable(nickname)), HttpStatus.OK

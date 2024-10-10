@@ -64,7 +64,7 @@ public class CounselorController {
         if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
 
         long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
-        counselorService.addLicense(counselorId, postDtos);
+        counselorService.addLicense(counselorId, counselorMapper.licensePostDtosToLicenses(postDtos));
 
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
@@ -89,7 +89,7 @@ public class CounselorController {
         if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
 
         long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
-        counselorService.addCareer(counselorId, postDtos);
+        counselorService.addCareer(counselorId, counselorMapper.careerPostDtosToCareers(postDtos));
 
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = ReservationMapper.class)
 public interface MemberMapper {
@@ -24,5 +25,11 @@ public interface MemberMapper {
 
     DailyMood dailyMoodPostDtoToDailyMood(DailyMoodDto.Post postDto);
 
-    Map<LocalDate, DailyMoodDto.Response> dailyMoodMapToDailyMoodResponseDtoMap(Map<LocalDate, DailyMood> dailyMoodMap);
+    default Map<LocalDate, DailyMood.Mood> dailyMoodMapToDailyMoodResponseDtoMap(Map<LocalDate, DailyMood> dailyMoodMap){
+        return dailyMoodMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().getMood()
+                        ));
+    };
 }

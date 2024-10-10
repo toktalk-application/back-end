@@ -3,7 +3,9 @@ package com.springboot.counselor.mapper;
 import com.springboot.counselor.available_date.AvailableDate;
 import com.springboot.counselor.available_date.AvailableTime;
 import com.springboot.counselor.dto.*;
+import com.springboot.counselor.entity.Career;
 import com.springboot.counselor.entity.Counselor;
+import com.springboot.counselor.entity.License;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
@@ -105,4 +107,8 @@ public interface CounselorMapper {
     };
 
     List<AvailableDateDto.Response> availableDatesToAvailableDateResponseDtos(List<AvailableDate> availableDates);
+
+    List<License> licensePostDtosToLicenses(List<LicenseDto.Post> postDtos);
+
+    List<Career> careerPostDtosToCareers(List<CareerDto.Post> postDtos);
 }
