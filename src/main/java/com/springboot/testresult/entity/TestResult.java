@@ -30,7 +30,7 @@ public class TestResult {
     @Column(nullable = false, length = 10)
     private TestLevel testLevel = TestLevel.NORMAL;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 100)
     private String comment;
 
     @Column(nullable = false)
