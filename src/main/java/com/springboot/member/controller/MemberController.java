@@ -5,6 +5,8 @@ import com.springboot.auth.dto.LoginDto;
 import com.springboot.counselor.entity.Counselor;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.member.dto.DailyMoodDto;
+import com.springboot.member.entity.DailyMood;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.response.SingleResponseEntity;
 import com.springboot.member.dto.MemberDto;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Map;
 
 @RestController
@@ -46,6 +49,23 @@ public class MemberController {
         return ResponseEntity.created(location).build();
     }
 
+    // 아이디 중복 체크
+    @GetMapping("/userid-availabilities")
+    public ResponseEntity<?> checkUsernameAvailability(@RequestParam String userId) {
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(memberService.isUserIdAvailable(userId)), HttpStatus.OK
+        );
+    }
+
+    // 닉네임 중복 체크
+    @GetMapping("/check-id-availabilities")
+    public ResponseEntity<?> checkNicknameAvailability(@RequestParam String nickname){
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(memberService.isNicknameAvailable(nickname)), HttpStatus.OK
+        );
+    }
+
+    // 특정 회원 조회
     @GetMapping("/{memberId}")
     public ResponseEntity<?> getMember(@PathVariable long memberId,
                                                               Authentication authentication){
@@ -76,6 +96,38 @@ public class MemberController {
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(memberMapper.memberToMemberResponseDto(patchedMember)), HttpStatus.OK
+        );
+    }
+
+    // 오늘의 기분 등록
+    @PostMapping("/daily-moods")
+    public ResponseEntity<?> postDailyMood(Authentication authentication,
+                                           @RequestBody DailyMoodDto.Post postDto){
+        // 회원만 요청 가능
+        LoginDto.UserType userType = CredentialUtil.getUserType(authentication);
+        if(!userType.equals(LoginDto.UserType.MEMBER)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+        memberService.addDailyMood(memberId, memberMapper.dailyMoodPostDtoToDailyMood(postDto));
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(null), HttpStatus.CREATED
+        );
+    }
+
+    // 오늘의 기분 월별 조회
+    @GetMapping("/daily-moods")
+    public ResponseEntity<?> getMonthlyMoods(Authentication authentication,
+                                             @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
+        // 회원만 요청 가능
+        LoginDto.UserType userType = CredentialUtil.getUserType(authentication);
+        if(!userType.equals(LoginDto.UserType.MEMBER)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+        Map<LocalDate, DailyMood> monthlyMoods = memberService.getMonthlyMoods(memberId, month);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(memberMapper.dailyMoodMapToDailyMoodResponseDtoMap(monthlyMoods)), HttpStatus.OK
         );
     }
 

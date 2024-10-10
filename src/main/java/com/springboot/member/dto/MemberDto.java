@@ -1,6 +1,7 @@
 package com.springboot.member.dto;
 
 import com.springboot.gender.Gender;
+import com.springboot.member.entity.DailyMood;
 import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Reservation;
 import lombok.AllArgsConstructor;
