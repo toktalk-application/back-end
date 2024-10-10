@@ -54,7 +54,7 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
     // 리뷰 등록
-    public void registerReview(long reservationId, ReservationDto.Review reviewDto, Authentication authentication){
+    public void registerReview(long reservationId, Review review, Authentication authentication){
         // Member만 리뷰 작성 가능
         CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
         if(auth.getUserType() != LoginDto.UserType.MEMBER) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
@@ -73,14 +73,11 @@ public class ReservationService {
         if(reservation.getReview() != null) throw new BusinessLogicException(ExceptionCode.REVIEW_EXIST);
 
         // 문제 없으면 리뷰 등록
-        Review review = new Review();
-        review.setContent(reviewDto.getContent());
-        review.setRating(reviewDto.getRating());
-        reservation.setReview(review);
+        reservation.setReview(review); // Reservation <-> Review 양방향 set 메서드
         reservationRepository.save(reservation);
     }
     // 상담사 진단 등록
-    public void registerReport(long reservationId, ReservationDto.Report reportDto, Authentication authentication){
+    public void registerReport(long reservationId, Report report, Authentication authentication){
         // Counselor만 진단 등록 가능
         CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
         if(auth.getUserType() != LoginDto.UserType.COUNSELOR) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
@@ -99,9 +96,7 @@ public class ReservationService {
         if(reservation.getReport() != null) throw new BusinessLogicException(ExceptionCode.REPORT_EXIST);
 
         // 문제 없으면 진단 등록
-        Report report = new Report();
-        report.setContent(reportDto.getContent());
-        reservation.setReport(report);
+        reservation.setReport(report); // Reservation <-> Report 양방향 set 메서드
         reservationRepository.save(reservation);
     }
 
