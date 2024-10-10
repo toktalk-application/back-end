@@ -19,6 +19,7 @@ public enum ExceptionCode {
     CANCELLATION_TOO_LATE(403, "Cancellation must be made at least 24 hours in advance"),
     TIMESLOT_DELETION_DENIED(403, "Occupied timeslot cannot be deleted"),
     TIMESLOT_REQUIRED(403, "At least 1 of timeslots required for reservation"),
+    INVALID_SCORE(404,"Invalid score"),
     UNCOMPLETE_COUNSELING(404, "Counseling not finished"),
     MEMBER_NOT_FOUND(404, "Member not found"),
     TEST_RESULT_NOT_FOUND(404, "TestResult not found"),
