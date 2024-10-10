@@ -28,9 +28,6 @@ public class License {
     @Column
     private String organization;
 
-    @Column
-    private LocalDate issueDate;
-
     public void setCounselor(Counselor counselor){
         this.counselor = counselor;
         if(!counselor.getLicenses().contains(this)){

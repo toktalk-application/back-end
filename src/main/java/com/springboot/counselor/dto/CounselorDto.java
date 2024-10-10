@@ -30,11 +30,12 @@ public class CounselorDto {
         private String phone;
         private LocalDate birth;
         private Gender gender;
-        private String ci;
         @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-zA-Z]{2,10}$", message = "이름은 영문 또는 한글로만 입력해야 합니다. (2~10자)")
         private String name;
-        @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-zA-Z]{2,30}$", message = "회사명은 영문 또는 한글로만 입력해야 합니다. (2~30자)")
-        private String company;
+        @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-zA-Z ]{2,30}$", message = "회사명은 영문 또는 한글로만 입력해야 합니다. (2~30자)") // 공백도 허용
+        private String currentCompany;
+        @Pattern(regexp = "^01([016789])-?([0-9]{3,4})-?([0-9]{4})$", message = "전화번호는 01x-xxxx-xxxx 형식과 일치해야 합니다")
+        private String currentCompanyTel;
         private List<License> licenses;
         private List<Career> careers;
     }
