@@ -45,26 +45,7 @@ public class ReservationDto {
         private LocalDate date;
         private String startTime;
         private String endTime;
-        private Review review;
-        private Report report;
-    }
-
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Review{
-        private String content;
-        private int rating;
-        private LocalDateTime createdAt;
-    }
-
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Report{
-        private String content;
-        private LocalDateTime createdAt;
+        private ReviewDto.Response review;
+        private ReportDto.Response report;
     }
 }

@@ -79,18 +79,14 @@ public class CounselorService {
         return counselorRepository.save(counselor);
     }
     // 자격증 추가
-    public void addLicense(long counselorId, List<LicenseDto.Post> postDtos){
+    public void addLicense(long counselorId, List<License> licenses){
         Counselor counselor = findVerifiedCounselor(counselorId);
         // 3개 넘개는 추가 안됨
-        if(counselor.getLicenses().size() + postDtos.size() > 3) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
+        if(counselor.getLicenses().size() + licenses.size() > 3) throw new BusinessLogicException(ExceptionCode.LICENSE_AMOUNT_VIOLATION);
 
         // 자격증 등록
-        postDtos.forEach(postDto -> {
-            License license = new License();
-            license.setCounselor(counselor);
-            license.setLicenseName(postDto.getLicenseName());
-            license.setOrganization(postDto.getOrganization());
-            license.setIssueDate(postDto.getIssueDate());
+        licenses.forEach(license -> {
+            license.setCounselor(counselor); // Counselor <-> License 양방향 set 메서드
         });
         counselor.setModifiedAt(LocalDateTime.now());
     }
@@ -110,17 +106,13 @@ public class CounselorService {
         counselorRepository.save(counselor);
     }
     // 경력사항 추가
-    public void addCareer(long counselorId, List<CareerDto.Post> postDtos){
+    public void addCareer(long counselorId, List<Career> careers){
         Counselor counselor = findVerifiedCounselor(counselorId);
         // 3개 넘개는 추가 안됨
-        if(counselor.getCareers().size() + postDtos.size() > 3) throw new BusinessLogicException(ExceptionCode.CAREER_AMOUNT_VIOLATION);
+        if(counselor.getCareers().size() + careers.size() > 3) throw new BusinessLogicException(ExceptionCode.CAREER_AMOUNT_VIOLATION);
 
         // 경력사항 등록
-        postDtos.forEach(postDto -> {
-            Career career = new Career();
-            career.setCompany(postDto.getCompany());
-            career.setResponsibility(postDto.getResponsibility());
-            career.setClassification(postDto.getClassification());
+        careers.forEach(career -> {
             career.setCounselor(counselor); // Counselor <-> Career 양방향 set 메서드
         });
         counselor.setModifiedAt(LocalDateTime.now());

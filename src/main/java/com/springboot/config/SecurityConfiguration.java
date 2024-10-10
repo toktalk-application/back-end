@@ -66,6 +66,8 @@ public class SecurityConfiguration {
                         // 그래서 토큰 안 넣으면 500 에러가 뜸. 처리되지 않은 예외이기 때문에
                         .antMatchers(HttpMethod.POST, "/members").permitAll()
                         .antMatchers(HttpMethod.POST, "/members/**").hasRole("USER")
+                        .antMatchers(HttpMethod.GET, "/members/userid-availabilities").permitAll()
+                        .antMatchers(HttpMethod.GET, "/members/nickname-availabilities").permitAll()
                         .antMatchers(HttpMethod.GET, "/members").hasAnyRole("USER", "ADMIN")
                         .antMatchers(HttpMethod.GET, "/members/**").hasAnyRole("USER", "ADMIN")
                         .antMatchers(HttpMethod.PATCH, "/members").hasAnyRole("USER", "ADMIN")

@@ -3,7 +3,9 @@ package com.springboot.reservation.mapper;
 import com.springboot.counselor.available_date.AvailableTime;
 import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.counselor.service.CounselorService;
+import com.springboot.reservation.dto.ReportDto;
 import com.springboot.reservation.dto.ReservationDto;
+import com.springboot.reservation.dto.ReviewDto;
 import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.entity.Review;
@@ -31,16 +33,16 @@ public interface ReservationMapper {
         LocalDate date = reservation.getReservationTimes().isEmpty() ? null : reservation.getReservationTimes().get(0).getAvailableDate().getDate();
 
         // 리뷰 dto로 변환
-        ReservationDto.Review reviewDto = null;
+        ReviewDto.Response reviewDto = null;
         if(reservation.getReview() != null){
             Review review = reservation.getReview();
-            reviewDto = new ReservationDto.Review(review.getContent(), review.getRating(), review.getCreatedAt());
+            reviewDto = new ReviewDto.Response(review.getReviewId(), review.getContent(), review.getRating(), review.getCreatedAt());
         }
         // 진단 dto로 변환
-        ReservationDto.Report reportDto = null;
+        ReportDto.Response reportDto = null;
         if(reservation.getReport() != null){
             Report report = reservation.getReport();
-            reportDto = new ReservationDto.Report(report.getContent(), report.getCreatedAt());
+            reportDto = new ReportDto.Response(report.getReportId(), report.getContent(), report.getCreatedAt());
         }
 
         Optional<Integer> depressionScoreOptional = Optional.ofNullable(reservation.getMember().getDepressionScore());
@@ -75,4 +77,8 @@ public interface ReservationMapper {
         }
         return response;
     }
+
+    Review reviewPostDToToReview(ReviewDto.Post postDto);
+
+    Report reportPostDtoToReport(ReportDto.Post postDto);
 }
