@@ -16,6 +16,7 @@ import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.service.ReservationService;
 import com.springboot.response.SingleResponseDto;
+import com.springboot.service.S3Service;
 import com.springboot.utils.CredentialUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -46,6 +48,7 @@ public class CounselorController {
     private final CounselorService counselorService;
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
+    private final S3Service s3Service;
 
     // 상담사 회원 가입
     @PostMapping
@@ -55,6 +58,17 @@ public class CounselorController {
 
         URI location = UriCreator.createUri(DEFAULT_URL, savedCounselor.getCounselorId());
         return ResponseEntity.created(location).build();
+    }
+    // 프로필 이미지 업로드
+    @PostMapping("/upload-image")
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.FILE_NOT_FOUND);
+        }
+
+        String imageUrl = s3Service.uploadFile(file);
+
+        return ResponseEntity.ok(imageUrl);
     }
     // 자격증 추가 등록
     @PostMapping("/licenses")
