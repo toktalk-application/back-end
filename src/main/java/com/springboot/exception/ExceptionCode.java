@@ -27,6 +27,7 @@ public enum ExceptionCode {
     RESERVATION_NOT_FOUND(404, "Reservation not found"),
     CHAT_ROOM_NOT_FOUND(404,"ChatRoom not found"),
     CHAT_ROOM_CLOSED(404,"ChatRoom is close"),
+    FILE_NOT_FOUND(404, "File not found"),
     UNAVAILABLE_DATE(404, "Given date is not available"),
     UNAVAILABLE_TIME(404, "Given time is not available"),
     LICENSE_NOT_FOUND(404, "License not found"),
