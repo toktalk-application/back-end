@@ -292,8 +292,15 @@ public class CounselorService {
     public Counselor findCounselor(long counselorId){
         return findVerifiedCounselor(counselorId);
     }
+    public Counselor findCounselor(String userId){
+        return findVerifiedCounselor(userId);
+    }
     private Counselor findVerifiedCounselor(long counselorId){
         Optional<Counselor> optionalCounselor = counselorRepository.findById(counselorId);
+        return optionalCounselor.orElseThrow(() -> new BusinessLogicException(ExceptionCode.COUNSELOR_NOT_FOUND));
+    }
+    private Counselor findVerifiedCounselor(String userId){
+        Optional<Counselor> optionalCounselor = counselorRepository.findByUserId(userId);
         return optionalCounselor.orElseThrow(() -> new BusinessLogicException(ExceptionCode.COUNSELOR_NOT_FOUND));
     }
 
