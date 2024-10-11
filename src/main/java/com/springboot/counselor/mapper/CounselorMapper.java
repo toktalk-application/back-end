@@ -3,16 +3,20 @@ package com.springboot.counselor.mapper;
 import com.springboot.counselor.available_date.AvailableDate;
 import com.springboot.counselor.available_date.AvailableTime;
 import com.springboot.counselor.dto.*;
+import com.springboot.counselor.entity.Career;
 import com.springboot.counselor.entity.Counselor;
+import com.springboot.counselor.entity.License;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = AvailableDateMapper.class)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CounselorMapper {
     Counselor counselorPostDtoToCounselor(CounselorDto.Post postDto);
     Counselor counselorPatchDtoToCounselor(CounselorDto.Patch patchDto);
@@ -24,8 +28,7 @@ public interface CounselorMapper {
                 .map(license -> new LicenseDto.Response(
                         license.getLicenseId(),
                         license.getLicenseName(),
-                        license.getOrganization(),
-                        license.getIssueDate()
+                        license.getOrganization()
                 )).collect(Collectors.toList());
         // 경력 -> 경력 dto 변환
         List<CareerDto.Response> careerDtos = counselor.getCareers().stream()
@@ -45,7 +48,7 @@ public interface CounselorMapper {
                 counselor.getUserId(),
                 counselor.getCompany(),
                 availableDateList.stream()
-                        .map(date -> new AvailableDateDto(
+                        .map(date -> new AvailableDateDto.Response(
                                 date.getAvailableDateId(),
                                 date.getDate(),
                                 date.getAvailableTimes().entrySet().stream()
@@ -55,8 +58,8 @@ public interface CounselorMapper {
                                                     AvailableTime time = entry.getValue();
                                                     return new AvailableTimeDto(
                                                             time.getAvailableTimeId(),
-                                                            time.getStartTime(),
-                                                            time.getEndTime(),
+                                                            time.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                                            time.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")),
                                                             time.getReservation() != null
                                                     );
                                                 }
@@ -67,10 +70,48 @@ public interface CounselorMapper {
                 counselor.getCallPrice(),
                 careerDtos,
                 licenseDtos,
+                counselor.getIntroduction(),
+                counselor.getExpertise(),
+                counselor.getSessionDescription(),
+                counselor.getProfileImage(),
                 counselor.getCreatedAt(),
                 counselor.getModifiedAt()
         );
     };
+    List<CounselorDto.Response> counselorsToCounselorResponseDtos(List<Counselor> counselors);
+
     /*@Mapping(source = "availableDates", target = "availableDates")
     CounselorDto.Response counselorToCounselorResponseDto(Counselor counselor);*/
+
+    default List<String> defaultTimesToFormattedDefaultTimes(List<LocalTime> defaultTimes){
+        return defaultTimes.stream()
+                .map(time -> time.format(DateTimeFormatter.ofPattern("HH:mm")))
+                .collect(Collectors.toList());
+    }
+
+    default AvailableDateDto.Response availableDateToAvailableDateDto(AvailableDate availableDate){
+        return new AvailableDateDto.Response(
+                availableDate.getAvailableDateId(),
+                availableDate.getDate(),
+                availableDate.getAvailableTimes().entrySet().stream()
+                        .collect(Collectors.toMap(
+                                entry -> entry.getKey(),
+                                entry -> {
+                                    AvailableTime time = entry.getValue();
+                                    return new AvailableTimeDto(
+                                            time.getAvailableTimeId(),
+                                            time.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                            time.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                            time.getReservation() != null
+                                    );
+                                }
+                        ))
+        );
+    };
+
+    List<AvailableDateDto.Response> availableDatesToAvailableDateResponseDtos(List<AvailableDate> availableDates);
+
+    List<License> licensePostDtosToLicenses(List<LicenseDto.Post> postDtos);
+
+    List<Career> careerPostDtosToCareers(List<CareerDto.Post> postDtos);
 }

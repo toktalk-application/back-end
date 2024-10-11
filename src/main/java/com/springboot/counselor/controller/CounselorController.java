@@ -2,6 +2,8 @@ package com.springboot.counselor.controller;
 
 import com.springboot.auth.CustomAuthenticationToken;
 import com.springboot.auth.dto.LoginDto;
+import com.springboot.counselor.available_date.AvailableDate;
+import com.springboot.counselor.dto.AvailableDateDto;
 import com.springboot.counselor.dto.CareerDto;
 import com.springboot.counselor.dto.CounselorDto;
 import com.springboot.counselor.dto.LicenseDto;
@@ -14,6 +16,7 @@ import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.service.ReservationService;
 import com.springboot.response.SingleResponseDto;
+import com.springboot.service.S3Service;
 import com.springboot.utils.CredentialUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
@@ -21,33 +24,51 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.net.URI;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/counselors")
 @AllArgsConstructor
+@Validated
 public class CounselorController {
     private final String DEFAULT_URL = "/counselors";
     private final CounselorMapper counselorMapper;
     private final CounselorService counselorService;
     private final ReservationService reservationService;
     private final ReservationMapper reservationMapper;
+    private final S3Service s3Service;
 
     // 상담사 회원 가입
     @PostMapping
-    public ResponseEntity<?> postCounselor(@RequestBody CounselorDto.Post postDto){
+    public ResponseEntity<?> postCounselor(@RequestBody @Valid CounselorDto.Post postDto){
         Counselor tempCounselor = counselorMapper.counselorPostDtoToCounselor(postDto);
         Counselor savedCounselor = counselorService.createCounselor(tempCounselor, postDto);
 
         URI location = UriCreator.createUri(DEFAULT_URL, savedCounselor.getCounselorId());
         return ResponseEntity.created(location).build();
+    }
+    // 프로필 이미지 업로드
+    @PostMapping("/upload-image")
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessLogicException(ExceptionCode.FILE_NOT_FOUND);
+        }
+
+        String imageUrl = s3Service.uploadFile(file);
+
+        return ResponseEntity.ok(imageUrl);
     }
     // 자격증 추가 등록
     @PostMapping("/licenses")
@@ -57,7 +78,7 @@ public class CounselorController {
         if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
 
         long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
-        counselorService.addLicense(counselorId, postDtos);
+        counselorService.addLicense(counselorId, counselorMapper.licensePostDtosToLicenses(postDtos));
 
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
@@ -82,7 +103,7 @@ public class CounselorController {
         if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.COUNSELOR)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
 
         long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
-        counselorService.addCareer(counselorId, postDtos);
+        counselorService.addCareer(counselorId, counselorMapper.careerPostDtosToCareers(postDtos));
 
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
@@ -97,30 +118,6 @@ public class CounselorController {
         counselorService.deleteCareer(counselorId, careerNumber);
 
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-    }
-
-    // 특정 상담사에 대한 특정일 또는 월별 예약 정보 조회
-    @GetMapping("/{counselorId}/reservations")
-    public ResponseEntity<?> getReservations(/*Authentication authentication,*/
-                                                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-                                                                         @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
-                                                                         @PathVariable long counselorId){
-        // 상담사 찾아오기
-        Counselor counselor = counselorService.findCounselor(counselorId);
-
-        if(date != null){ // date 파라미터를 넣었으면 특정일 조회
-            List<Reservation> dailyReservations = reservationService.getDailyReservations(counselor, date);
-            return new ResponseEntity<>(
-                    new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(dailyReservations)), HttpStatus.OK
-            );
-        } else if (month != null) { // month 파라미터를 넣었으면 특정월 조회
-            Map<LocalDate, Boolean> monthlyReservations = reservationService.getMonthlyReservations(counselor, month);
-            return new ResponseEntity<>(
-                    new SingleResponseDto<>(monthlyReservations), HttpStatus.OK
-            );
-        }
-        // 쿼리 파라미터를 아무것도 안 넣었을 때
-        throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
     }
 
     // 상담사 프로필 수정
@@ -181,17 +178,48 @@ public class CounselorController {
         List<LocalTime> times = counselorService.getDefaultTimesOfDay(counselorId, dayOfWeek);
 
         return new ResponseEntity<>(
-                new SingleResponseDto<>(times), HttpStatus.OK
+                new SingleResponseDto<>(counselorMapper.defaultTimesToFormattedDefaultTimes(times)), HttpStatus.OK
         );
     }
 
     // 단일 상담사 조회
     @GetMapping("/{counselorId}")
-    public ResponseEntity<?> getCounselor(@PathVariable long counselorId
+    public ResponseEntity<?> getCounselor(@PathVariable @Positive long counselorId
                                           /*,Authentication authentication*/){
         Counselor findCounselor = counselorService.findCounselor(counselorId);
         return new ResponseEntity<>(
                 new SingleResponseDto<>(counselorMapper.counselorToCounselorResponseDto(findCounselor)), HttpStatus.OK
+        );
+    }
+    // 활동중인 전체 상담사 조회
+    @GetMapping
+    public ResponseEntity<?> getCounselors(/*Authentication authentication*/){
+        List<Counselor> activeCounselors = counselorService.getAllActiveCounselors();
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(counselorMapper.counselorsToCounselorResponseDtos(activeCounselors)), HttpStatus.OK
+        );
+    }
+
+    // 자신의 특정일 상담 슬롯 조회
+    @GetMapping("/available-dates")
+    public ResponseEntity<?> getAvailableDate(Authentication authentication,
+                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        AvailableDate availableDate = counselorService.getAvailableDate(counselorId, date);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(counselorMapper.availableDateToAvailableDateDto(availableDate)), HttpStatus.OK
+        );
+    }
+
+    // 자신의 특정일 상담 슬롯 변경
+    @PatchMapping("/available-dates")
+    public ResponseEntity<?> patchAvailableDate(Authentication authentication,
+                                                @RequestBody AvailableDateDto.Patch patchDto){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+        counselorService.updateAvailableDate(counselorId, patchDto);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(null), HttpStatus.OK
         );
     }
 }

@@ -6,6 +6,8 @@ import com.springboot.counselor.entity.Counselor;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.firebase.dto.FcmTokenRequestDto;
+import com.springboot.member.dto.DailyMoodDto;
+import com.springboot.member.entity.DailyMood;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.response.SingleResponseEntity;
 import com.springboot.member.dto.MemberDto;
@@ -15,20 +17,25 @@ import com.springboot.member.service.MemberService;
 import com.springboot.utils.CredentialUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/members")
 @AllArgsConstructor
+@Validated
 public class MemberController {
     private final String MEMBER_DEFAULT_URL = "/members";
     private final MemberService memberService;
@@ -36,7 +43,7 @@ public class MemberController {
 
     // 회원가입
     @PostMapping
-    public ResponseEntity<?> postMember(@RequestBody MemberDto.Post postDto){
+    public ResponseEntity<?> postMember(@RequestBody @Valid MemberDto.Post postDto){
         Member tempMember = memberMapper.memberPostDtoToMember(postDto);
         Member member = memberService.createMember(tempMember);
         URI location = UriCreator.createUri(MEMBER_DEFAULT_URL, member.getMemberId());
@@ -44,21 +51,26 @@ public class MemberController {
         return ResponseEntity.created(location).build();
     }
 
-    // 우울증 테스트
-    @PostMapping("/test")
-    public ResponseEntity<?> postTest(@RequestBody MemberDto.Test testDto,
-                                      Authentication authentication){
-        // Member만 테스트 가능
-        if(!CredentialUtil.getUserType(authentication).equals(LoginDto.UserType.MEMBER)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
-        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
-        memberService.createTest(memberId, testDto);
-
-        return new ResponseEntity<>(null, HttpStatus.CREATED);
+    // 아이디 중복 체크
+    @GetMapping("/userid-availabilities")
+    public ResponseEntity<?> checkUsernameAvailability(@RequestParam String userId) {
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(memberService.isUserIdAvailable(userId)), HttpStatus.OK
+        );
     }
 
+    // 닉네임 중복 체크
+    @GetMapping("/nickname-availabilities")
+    public ResponseEntity<?> checkNicknameAvailability(@RequestParam String nickname){
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(memberService.isNicknameAvailable(nickname)), HttpStatus.OK
+        );
+    }
+
+    // 특정 회원 조회
     @GetMapping("/{memberId}")
     public ResponseEntity<?> getMember(@PathVariable long memberId,
-                                                              Authentication authentication){
+                                       Authentication authentication){
         Member findMember = memberService.findMember(memberId);
         /*return new SingleResponseEntity<>(memberMapper.memberToMemberResponseDto(findMember), HttpStatus.OK);*/
         return new ResponseEntity<>(
@@ -86,6 +98,38 @@ public class MemberController {
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(memberMapper.memberToMemberResponseDto(patchedMember)), HttpStatus.OK
+        );
+    }
+
+    // 오늘의 기분 등록
+    @PostMapping("/daily-moods")
+    public ResponseEntity<?> postDailyMood(Authentication authentication,
+                                           @RequestBody DailyMoodDto.Post postDto){
+        // 회원만 요청 가능
+        LoginDto.UserType userType = CredentialUtil.getUserType(authentication);
+        if(!userType.equals(LoginDto.UserType.MEMBER)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+        memberService.addDailyMood(memberId, memberMapper.dailyMoodPostDtoToDailyMood(postDto));
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(null), HttpStatus.CREATED
+        );
+    }
+
+    // 오늘의 기분 월별 조회
+    @GetMapping("/daily-moods")
+    public ResponseEntity<?> getMonthlyMoods(Authentication authentication,
+                                             @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
+        // 회원만 요청 가능
+        LoginDto.UserType userType = CredentialUtil.getUserType(authentication);
+        if(!userType.equals(LoginDto.UserType.MEMBER)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+        Map<LocalDate, DailyMood> monthlyMoods = memberService.getMonthlyMoods(memberId, month);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(memberMapper.dailyMoodMapToDailyMoodResponseDtoMap(monthlyMoods)), HttpStatus.OK
         );
     }
 

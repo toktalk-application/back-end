@@ -1,5 +1,6 @@
 package com.springboot.reservation.dto;
 
+import com.springboot.gender.Gender;
 import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.entity.Review;
@@ -34,6 +35,9 @@ public class ReservationDto {
         private long reservationId;
         private long counselorId;
         private String memberNickname;
+        private int memberBirthYear;
+        private Gender memberGender;
+        private String memberDepressionScore;
         private String counselorName;
         private String comment;
         private Reservation.CounselingType type;
@@ -41,26 +45,7 @@ public class ReservationDto {
         private LocalDate date;
         private String startTime;
         private String endTime;
-        private Review review;
-        private Report report;
-    }
-
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Review{
-        private String content;
-        private int rating;
-        private LocalDateTime createdAt;
-    }
-
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Report{
-        private String content;
-        private LocalDateTime createdAt;
+        private ReviewDto.Response review;
+        private ReportDto.Response report;
     }
 }

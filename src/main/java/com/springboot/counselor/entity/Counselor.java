@@ -1,5 +1,7 @@
 package com.springboot.counselor.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.springboot.chat.entity.ChatRoom;
 import com.springboot.counselor.available_date.AvailableDate;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
@@ -65,6 +67,24 @@ public class Counselor {
     @Column
     private int callPrice = 50000;
 
+    @Column
+    private String profileImage;
+
+    @Column
+    private String introduction;
+
+    @Column
+    private String expertise;
+
+    @Column
+    private String sessionDescription;
+
+    @Column
+    private String currentCompany;
+
+    @Column
+    private String currentCompanyTel;
+
     @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
     private Map<LocalDate, AvailableDate> availableDates = new HashMap();
 
@@ -76,6 +96,10 @@ public class Counselor {
 
     @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Keyword> keywords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "counselor")
+    @JsonManagedReference("counselor-chatroom")
+    private List<ChatRoom> chatRooms = new ArrayList<>();
 
     @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
     private Map<DayOfWeek, DefaultDay> defaultDays = new HashMap<>();

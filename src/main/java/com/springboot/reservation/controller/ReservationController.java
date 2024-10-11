@@ -8,23 +8,28 @@ import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
+import com.springboot.reservation.dto.ReportDto;
 import com.springboot.reservation.dto.ReservationDto;
+import com.springboot.reservation.dto.ReviewDto;
 import com.springboot.reservation.entity.Reservation;
-import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.mapper.ReservationMapper;
-import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.reservation.service.ReservationService;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.utils.CredentialUtil;
+import com.springboot.utils.IntValidationUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Positive;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -70,17 +75,71 @@ public class ReservationController {
                                             @PathVariable long reservationId){
         Reservation reservation = reservationService.findReservation(reservationId);
 
+        Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
+
         return new ResponseEntity<>(
                 new SingleResponseDto<>(reservationMapper.reservationToReservationResponseDto(reservation)), HttpStatus.OK
         );
     }
 
+    // 멤버가 자신이 예약한 특정일 상담 목록 조회
+    @GetMapping("/daily")
+    public ResponseEntity<?> getMyReservations(Authentication authentication,
+                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        // 회원만 요청 가능
+        LoginDto.UserType userType = CredentialUtil.getUserType(authentication);
+        if(!userType.equals(LoginDto.UserType.MEMBER)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+
+        List<Reservation> reservations = reservationService.getDailyReservationsByMember(memberId, date);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(reservations)), HttpStatus.OK
+        );
+    }
+
+    // 회원이 특정월에 대한, 날짜별로 자신이 예약한 상담이 있는지 여부 조회
+    @GetMapping("/monthly")
+    public ResponseEntity<?> getMonthlyReservations(Authentication authentication,
+                                                    @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+
+        Map<LocalDate, Boolean> monthlyReservations = reservationService.getMonthlyReservationsByMember(memberId, month);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(monthlyReservations), HttpStatus.OK
+        );
+    }
+
+    // 특정 상담사에 대한 특정일 또는 월별 예약 정보 조회
+    @GetMapping
+    public ResponseEntity<?> getReservations(/*Authentication authentication,*/
+            @RequestParam @Positive long counselorId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
+
+        if(date != null){ // date 파라미터를 넣었으면 특정일 조회
+            List<Reservation> dailyReservations = reservationService.getDailyReservationsWithCounselor(counselorId, date);
+
+            return new ResponseEntity<>(
+                    new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(dailyReservations)), HttpStatus.OK
+            );
+        } else if (month != null) { // month 파라미터를 넣었으면 특정월 조회
+            Map<LocalDate, Boolean> monthlyReservations = reservationService.getMonthlyReservationsWithCounselor(counselorId, month);
+            return new ResponseEntity<>(
+                    new SingleResponseDto<>(monthlyReservations), HttpStatus.OK
+            );
+        }
+        // 쿼리 파라미터를 아무것도 안 넣었을 때
+        throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
+    }
+
     // 리뷰 등록
     @PostMapping("/{reservationId}/reviews")
     public ResponseEntity<?> postReview(@PathVariable long reservationId,
-                                        @RequestBody ReservationDto.Review reviewDto,
+                                        @RequestBody ReviewDto.Post reviewDto,
                                         Authentication authentication){
-        reservationService.registerReview(reservationId, reviewDto, authentication);
+        reservationService.registerReview(reservationId, reservationMapper.reviewPostDToToReview(reviewDto), authentication);
 
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
@@ -88,17 +147,17 @@ public class ReservationController {
     // 상담사 진단 등록
     @PostMapping("/{reservationId}/reports")
     public ResponseEntity<?> postReport(@PathVariable long reservationId,
-                                        @RequestBody ReservationDto.Report reportDto,
+                                        @RequestBody ReportDto.Post reportDto,
                                         Authentication authentication
                                         ){
-        reservationService.registerReport(reservationId, reportDto, authentication);
+        reservationService.registerReport(reservationId, reservationMapper.reportPostDtoToReport(reportDto), authentication);
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
     // 예약 취소 (회원, 상담사 모두 가능)
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<?> cancelReservation(@PathVariable long reservationId,
-                                            @RequestParam(required = false) Integer cancelReason,
+                                            @RequestParam(required = false) String cancelReason,
                                             Authentication authentication){
         CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
 

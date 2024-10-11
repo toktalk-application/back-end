@@ -11,7 +11,7 @@ import java.time.LocalTime;
 @Setter
 public class AvailableTimeDto {
     private long availableTimeId;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private String startTime;
+    private String endTime;
     private boolean isReserved;
 }

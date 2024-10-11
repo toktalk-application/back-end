@@ -15,7 +15,6 @@ public class LicenseDto {
     public static class Post{
         private String licenseName;
         private String organization;
-        private LocalDate issueDate;
     }
     @Getter
     @Setter
@@ -25,6 +24,5 @@ public class LicenseDto {
         private long licenseId;
         private String licenseName;
         private String organization;
-        private LocalDate issueDate;
     }
 }

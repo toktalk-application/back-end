@@ -36,4 +36,9 @@ public class CalendarUtil {
 
         return today.plusDays(daysUntilNext);
     }
+
+    // 특정 일자가 특정 월에 속하는지 판별
+    public static boolean isLocalDateInYearMonth(LocalDate date, YearMonth month){
+        return date.getYear() == month.getYear() && date.getMonth().equals(month.getMonth());
+    }
 }
