@@ -70,6 +70,10 @@ public interface CounselorMapper {
                 counselor.getCallPrice(),
                 careerDtos,
                 licenseDtos,
+                counselor.getIntroduction(),
+                counselor.getExpertise(),
+                counselor.getSessionDescription(),
+                counselor.getProfileImage(),
                 counselor.getCreatedAt(),
                 counselor.getModifiedAt()
         );
