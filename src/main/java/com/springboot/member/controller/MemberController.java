@@ -104,7 +104,7 @@ public class MemberController {
     public ResponseEntity<?> updateFcmToken(@PathVariable long memberId,
                                             @RequestBody MemberDto.FcmTokenDto fcmTokenDto,
                                             Authentication authentication) {
-        // 사용자의 로그인 id 를 추출
+//         사용자의 로그인 id 를 추출
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String userId = userDetails.getUsername();
 
