@@ -45,7 +45,7 @@ public class MemberDto {
     @AllArgsConstructor
     @Getter
     @Setter
-    public static class Response{
+    public static class Response {
         private long memberId;
         private String userId;
         private String nickname;
@@ -61,7 +61,9 @@ public class MemberDto {
     @NoArgsConstructor
     public static class FcmTokenDto {
         private String fcmToken;
+
     }
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter

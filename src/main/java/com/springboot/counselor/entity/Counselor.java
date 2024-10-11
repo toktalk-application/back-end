@@ -47,6 +47,9 @@ public class Counselor {
     private String ci;
 
     @Column
+    private String fcmToken;
+
+    @Column
     private String name;
 
     @Column
