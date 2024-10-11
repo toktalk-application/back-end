@@ -4,6 +4,7 @@ import com.springboot.gender.Gender;
 import com.springboot.member.entity.DailyMood;
 import com.springboot.reservation.dto.ReservationDto;
 import com.springboot.reservation.entity.Reservation;
+import com.springboot.testresult.entity.TestResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +28,6 @@ public class MemberDto {
         private String nickname;
         private LocalDate birth;
         private Gender gender;
-        private String ci;
     }
 
     @AllArgsConstructor
@@ -51,6 +51,7 @@ public class MemberDto {
         private String nickname;
         private LocalDate birth;
         private Gender gender;
+        private TestResult lastTestResult;
         private List<ReservationDto.Response> reservations;
     }
 
