@@ -41,12 +41,6 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column
-    private String ci;
-
-    @Column
-    private Integer depressionScore = null;
-
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Map<LocalDate, DailyMood> dailyMoods = new HashMap<>();
 
