@@ -32,7 +32,10 @@ public enum ExceptionCode {
     REVIEW_EXIST(409, "Review already exists"),
     REPORT_EXIST(409, "Report already exists"),
     CREDENTIAL_NOT_FOUND(500, "Some credential field not found"),
-    INVALID_MONTH_PARAMETER(500, "Months parameter of addAvailableTime() method in CounselorService must be positive")
+    INVALID_MONTH_PARAMETER(500, "Months parameter of addAvailableTime() method in CounselorService must be positive"),
+    INVALID_PAYMENT_AMOUNT(404, "Invalid_Payment_Amount"),
+    PAYMENT_NOT_FOUND(404, "Payment_Not_Found"),
+    PAYMENT_FAILED(404, "Payment_Failed")
     ;
     @Getter
     private int status;
