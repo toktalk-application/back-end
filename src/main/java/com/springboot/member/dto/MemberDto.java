@@ -16,7 +16,7 @@ public class MemberDto {
     @NoArgsConstructor
     @Getter
     @Setter
-    public static class Post{
+    public static class Post {
         private String userId;
         private String password;
         private String nickname;
@@ -29,7 +29,7 @@ public class MemberDto {
     @NoArgsConstructor
     @Getter
     @Setter
-    public static class Patch{
+    public static class Patch {
         private String password;
     }
 
@@ -37,7 +37,7 @@ public class MemberDto {
     @AllArgsConstructor
     @Getter
     @Setter
-    public static class Response{
+    public static class Response {
         private long memberId;
         private String userId;
         private String nickname;
@@ -53,11 +53,13 @@ public class MemberDto {
     public static class FcmTokenDto {
         private String fcmToken;
 
+    }
+
     @NoArgsConstructor
     @AllArgsConstructor
     @Getter
     @Setter
-    public static class Test{
+    public static class Test {
         private List<Integer> answers;
     }
 }

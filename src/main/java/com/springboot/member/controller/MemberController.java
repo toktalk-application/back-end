@@ -5,6 +5,7 @@ import com.springboot.auth.dto.LoginDto;
 import com.springboot.counselor.entity.Counselor;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.firebase.dto.FcmTokenRequestDto;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.response.SingleResponseEntity;
 import com.springboot.member.dto.MemberDto;
@@ -17,9 +18,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import java.net.URI;
 import java.util.Map;
 
@@ -117,4 +120,25 @@ public class MemberController {
         memberService.updateFcmToken(memberId, fcmTokenDto.getFcmToken());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+//    @PutMapping("/{userId}/fcm-token")
+//    public ResponseEntity<String> updateFcmToken(
+//            @PathVariable Long userId,
+//            @RequestBody FcmTokenRequestDto requestDto,
+//            @AuthenticationPrincipal UserDetails userDetails) {
+//
+//        // 인증된 사용자와 요청의 userId가 일치하는지 확인
+//        if (!userDetails.getUsername().equals(userId.toString())) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
+//        }
+//
+//        try {
+//            memberService.updateFcmToken(userId, requestDto.getFcmToken());
+//            return ResponseEntity.ok("FCM token updated successfully");
+//        } catch (EntityNotFoundException e) {
+//            return ResponseEntity.notFound().build();
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating FCM token");
+//        }
+//    }
 }
