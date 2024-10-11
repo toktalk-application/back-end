@@ -6,9 +6,12 @@ import com.springboot.counselor.entity.Counselor;
 import com.springboot.auth.dto.LoginDto;
 import com.springboot.auth.jwt.JwtTokenizer;
 import com.springboot.member.entity.Member;
+import com.springboot.member.repository.MemberRepository;
 import lombok.SneakyThrows;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -78,6 +81,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         this.getSuccessHandler().onAuthenticationSuccess(request,response,authentication);
     }
+
+
     protected String delegateAccessToken(Member member){
         Map<String,Object> claims = new HashMap<>();
         claims.put("username", member.getUserId());

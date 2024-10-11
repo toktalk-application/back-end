@@ -1,2 +1,2 @@
-package com.springboot.toss.repository;public interface PaymentRepsitory {
+package com.springboot.toss.repository;public interface PaymentRepository {
 }
