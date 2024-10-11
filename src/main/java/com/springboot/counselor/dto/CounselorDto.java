@@ -82,6 +82,10 @@ public class CounselorDto {
         private int callPrice;
         private List<CareerDto.Response> careers;
         private List<LicenseDto.Response> licenses;
+        private String introduction;
+        private String expertise;
+        private String sessionDescription;
+        private String profileImage;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
     }
