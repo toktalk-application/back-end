@@ -9,6 +9,7 @@ import com.springboot.reservation.dto.ReviewDto;
 import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.entity.Review;
+import com.springboot.testresult.entity.TestResult;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -45,8 +46,9 @@ public interface ReservationMapper {
             reportDto = new ReportDto.Response(report.getReportId(), report.getContent(), report.getCreatedAt());
         }
 
-        Optional<Integer> depressionScoreOptional = Optional.ofNullable(reservation.getMember().getDepressionScore());
-        int depressionScore = depressionScoreOptional.orElse(-1);
+        // 멤버 우울증 점수
+        List<TestResult> testResults = reservation.getMember().getTestResults();
+        int depressionScore = testResults.isEmpty() ? -1 : testResults.get(testResults.size() - 1).getScore();
 
         return new ReservationDto.Response(
                 reservation.getReservationId(),
