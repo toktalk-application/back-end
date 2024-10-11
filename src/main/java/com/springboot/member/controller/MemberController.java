@@ -68,7 +68,7 @@ public class MemberController {
     // 특정 회원 조회
     @GetMapping("/{memberId}")
     public ResponseEntity<?> getMember(@PathVariable long memberId,
-                                                              Authentication authentication){
+                                       Authentication authentication){
         Member findMember = memberService.findMember(memberId);
         /*return new SingleResponseEntity<>(memberMapper.memberToMemberResponseDto(findMember), HttpStatus.OK);*/
         return new ResponseEntity<>(
