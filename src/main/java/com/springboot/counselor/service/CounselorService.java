@@ -319,20 +319,22 @@ public class CounselorService {
                         .ifPresent(company -> realCounselor.setCompany(company));
         Optional.ofNullable(counselor.getName())
                         .ifPresent(name -> realCounselor.setName(name));
-        Optional.ofNullable(counselor.getChatPrice())
+        if(counselor.getChatPrice() != 0) realCounselor.setChatPrice(counselor.getChatPrice());
+        if(counselor.getCallPrice() != 0) realCounselor.setCallPrice(counselor.getCallPrice());
+        /*Optional.ofNullable(counselor.getChatPrice())
                         .ifPresent(chatprice -> realCounselor.setChatPrice(chatprice));
         Optional.ofNullable(counselor.getCallPrice())
-                        .ifPresent(callprice -> realCounselor.setCallPrice(callprice));
+                        .ifPresent(callprice -> realCounselor.setCallPrice(callprice));*/
         Optional.ofNullable(counselor.getProfileImage())
-                        .ifPresent(profileImage -> counselor.setProfileImage(profileImage));
+                        .ifPresent(profileImage -> realCounselor.setProfileImage(profileImage));
         Optional.ofNullable(counselor.getIntroduction())
-                        .ifPresent(introduction -> counselor.setIntroduction(introduction));
+                        .ifPresent(introduction -> realCounselor.setIntroduction(introduction));
         Optional.ofNullable(counselor.getExpertise())
-                        .ifPresent(expertise -> counselor.setExpertise(expertise));
+                        .ifPresent(expertise -> realCounselor.setExpertise(expertise));
         Optional.ofNullable(counselor.getSessionDescription())
-                        .ifPresent(sessionDescription -> counselor.setSessionDescription(sessionDescription));
+                        .ifPresent(sessionDescription -> realCounselor.setSessionDescription(sessionDescription));
 
-        counselor.setModifiedAt(LocalDateTime.now());
+        realCounselor.setModifiedAt(LocalDateTime.now());
         return counselorRepository.save(realCounselor);
     }
     private boolean isUserIdAvailable(String userId){
