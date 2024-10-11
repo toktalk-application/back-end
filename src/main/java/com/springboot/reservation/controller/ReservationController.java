@@ -113,7 +113,7 @@ public class ReservationController {
 
     // 특정 상담사에 대한 특정일 또는 월별 예약 정보 조회
     @GetMapping
-    public ResponseEntity<?> getReservations(/*Authentication authentication,*/
+    public ResponseEntity<?> getReservations(Authentication authentication,
             @RequestParam @Positive long counselorId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
