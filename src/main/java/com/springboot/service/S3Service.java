@@ -30,10 +30,11 @@ public class S3Service {
                 .build();
     }
 
-    // MultipartFile을 처리하는 메서드
+    // MultipartFile을 처리하여 S3에 업로드하는 메서드 (파일 유형에 따라 자동으로 폴더 지정)
     public String uploadFile(MultipartFile multipartFile) {
-        String folderName = "image/";
+        String folderName = getFolderNameByFileType(multipartFile);  // 파일 유형에 따라 폴더 경로 설정
         String fileName = folderName + multipartFile.getOriginalFilename();
+
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
@@ -48,6 +49,26 @@ public class S3Service {
         } catch (S3Exception | IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    // 파일 유형에 따라 업로드 경로 설정 (이미지/녹음 파일 등)
+    private String getFolderNameByFileType(MultipartFile multipartFile) {
+        String contentType = multipartFile.getContentType();
+
+        if (contentType == null) {
+            throw new IllegalArgumentException("파일의 MIME 타입을 확인할 수 없습니다.");
+        }
+        // 이미지 파일인지 확인
+        if (contentType.startsWith("image")) {
+            return "image/";
+        }
+        // 오디오 파일인지 확인
+        else if (contentType.startsWith("audio")) {
+            return "recording/";
+        }
+        else {
+            throw new IllegalArgumentException("지원되지 않는 파일 유형입니다: " + contentType);
         }
     }
 
