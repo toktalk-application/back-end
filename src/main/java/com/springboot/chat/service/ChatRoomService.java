@@ -62,8 +62,13 @@ public class ChatRoomService {
             throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
         }
         chatRoom.setRoomStatus(ChatRoom.RoomStatus.CLOSE);
+        chatRoom.setCallStatus(ChatRoom.CallStatus.INACTIVE);
         chatRoomRepository.save(chatRoom);
         return chatRoom;
+    }
+
+    public ChatRoom updateChatRoom(ChatRoom chatRoom) {
+        return chatRoomRepository.save(chatRoom);
     }
 
     public ChatRoom findVerifiedChatRoom(long roomId) {
