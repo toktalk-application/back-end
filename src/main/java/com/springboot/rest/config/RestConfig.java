@@ -1,4 +1,4 @@
-package com.springboot.redis.config;
+package com.springboot.rest.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 public class RestConfig {
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate resTemplate() {
         return new RestTemplate();
     }
 }
