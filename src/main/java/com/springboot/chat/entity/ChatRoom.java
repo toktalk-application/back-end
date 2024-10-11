@@ -36,12 +36,20 @@ public class ChatRoom {
     @Column(nullable = false, length = 10)
     private RoomStatus roomStatus = RoomStatus.CLOSE;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private CallStatus callStatus = CallStatus.INACTIVE;
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("chatroom-chatlog")
     private List<ChatLog> chatLogs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("chatroom-calllog")
+    private List<CallLog> callLogs = new ArrayList<>();
 
     public enum RoomStatus {
         OPEN("open"),
@@ -52,6 +60,18 @@ public class ChatRoom {
         private String status;
 
         RoomStatus(String status) {
+            this.status = status;
+        }
+    }
+
+    public enum CallStatus {
+        ACTIVE("통화중"),
+        INACTIVE("통화종료"),
+        CONNECTING("통화 연결중");
+
+        private String status;
+
+        CallStatus(String status) {
             this.status = status;
         }
     }
