@@ -52,10 +52,16 @@ public class MemberService {
     public Member findMember(long memberId){
         return findVerifiedMember(memberId);
     }
+    public Member findMember(String userId){
+        return findVerifiedMember(userId);
+    }
     private Member findVerifiedMember(long memberId){
         Optional<Member> optionalMember = memberRepository.findByMemberId(memberId);
-        return optionalMember.orElseThrow(() ->
-            new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+        return optionalMember.orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
+    private Member findVerifiedMember(String userId){
+        Optional<Member> optionalMember = memberRepository.findByUserId(userId);
+        return optionalMember.orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
     }
 
     public Member updateMember(Member member){
