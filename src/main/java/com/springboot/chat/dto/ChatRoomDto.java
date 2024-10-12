@@ -11,7 +11,19 @@ public class ChatRoomDto {
     @Builder
     @Getter
     @Setter
-    public static class Response {
+    public static class SimpleResponse {
+        private long roomId;
+        private String counselorName;
+        private String nickname;
+        private String profileImage;
+        private String roomStatus;
+        private String message;
+        private LocalDateTime createdAt;
+    }
+    @Builder
+    @Getter
+    @Setter
+    public static class DetailResponse {
         private long roomId;
         private long memberId;
         private long counselorId;

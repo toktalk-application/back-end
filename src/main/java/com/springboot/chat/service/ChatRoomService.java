@@ -1,5 +1,7 @@
 package com.springboot.chat.service;
 
+import com.springboot.auth.CustomAuthenticationToken;
+import com.springboot.auth.dto.LoginDto;
 import com.springboot.chat.entity.ChatRoom;
 import com.springboot.chat.repository.ChatRoomRepository;
 import com.springboot.counselor.entity.Counselor;
@@ -13,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -69,6 +72,56 @@ public class ChatRoomService {
 
     public ChatRoom updateChatRoom(ChatRoom chatRoom) {
         return chatRoomRepository.save(chatRoom);
+    }
+
+    public ChatRoom findChatRoom(long roomId, Authentication authentication) {
+        CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
+
+        if(auth.getUserType() == LoginDto.UserType.MEMBER) {
+
+            Member findMember = memberService.findMember(
+                    Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"))
+            );
+
+            ChatRoom chatRoom = findVerifiedChatRoom(roomId);
+
+            if (chatRoom.getMember().getMemberId() != findMember.getMemberId()) {
+                throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+            }
+
+            return findVerifiedChatRoom(roomId);
+        } else {
+            Counselor findCounselor = counselorService.findCounselor(
+                    Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"))
+            );
+
+            ChatRoom chatRoom = findVerifiedChatRoom(roomId);
+
+            if(chatRoom.getCounselor().getCounselorId() != findCounselor.getCounselorId()) {
+                throw new BusinessLogicException(ExceptionCode.ACCESS_DENIED);
+            }
+
+            return findVerifiedChatRoom(roomId);
+        }
+    }
+
+    public List<ChatRoom> findChatRooms(Authentication authentication) {
+        CustomAuthenticationToken auth = (CustomAuthenticationToken) authentication;
+
+        if(auth.getUserType() == LoginDto.UserType.MEMBER) {
+
+            Member findMember = memberService.findMember(
+                    Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"))
+            );
+
+            return chatRoomRepository.findByMember(findMember);
+        } else {
+            Counselor findCounselor = counselorService.findCounselor(
+                    Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"))
+            );
+
+            return chatRoomRepository.findByCounselor(findCounselor);
+        }
     }
 
     public ChatRoom findVerifiedChatRoom(long roomId) {

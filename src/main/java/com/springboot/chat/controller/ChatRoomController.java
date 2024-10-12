@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Positive;
+import java.util.List;
 
 @RestController
 @RequestMapping("/chat_rooms")
@@ -26,30 +27,33 @@ public class ChatRoomController {
         this.chatLogMapper = chatLogMapper;
     }
     @PostMapping("/open")
-    public ResponseEntity<ChatRoomDto.Response> openChatRoom(@RequestParam long memberId, Authentication authentication) {
+    public ResponseEntity<?> openChatRoom(@RequestParam long memberId, Authentication authentication) {
         ChatRoom chatRoom = chatRoomService.createOrGetChatRoom(memberId, authentication);
-        ChatRoomDto.Response responseDto = chatRoomMapper.chatRoomToChatRoomResponseDto(chatRoom, chatLogMapper);
+        ChatRoomDto.DetailResponse responseDto = chatRoomMapper.chatRoomToChatRoomDetailResponseDto(chatRoom, chatLogMapper);
+
         return ResponseEntity.ok(responseDto);
     }
 
     @PatchMapping("/{room-id}/close")
-    public ResponseEntity<ChatRoomDto.Response> closeChatRoom(@PathVariable("room-id") @Positive long roomId,
-                                                              Authentication authentication) {
+    public ResponseEntity<?> closeChatRoom(@PathVariable("room-id") @Positive long roomId, Authentication authentication) {
         ChatRoom chatRoom = chatRoomService.closeChatRoom(roomId, authentication);
-        ChatRoomDto.Response responseDto = chatRoomMapper.chatRoomToChatRoomResponseDto(chatRoom, chatLogMapper);
+        ChatRoomDto.DetailResponse responseDto = chatRoomMapper.chatRoomToChatRoomDetailResponseDto(chatRoom, chatLogMapper);
+
         return ResponseEntity.ok(responseDto);
     }
 
-//    @GetMapping("{room-id}")
-//    public ResponseEntity getChatRoom(@PathVariable("room-id") @Positive long roomId,
-//                                      Authentication authentication) {
-//
-//    }
-//
-//    @GetMapping
-//    public ResponseEntity getChatRooms(@Positive @RequestParam int page,
-//                                       @Positive @RequestParam int size,
-//                                       Authentication authentication) {
-//
-//    }
+    @GetMapping("{room-id}")
+    public ResponseEntity getChatRoom(@PathVariable("room-id") @Positive long roomId, Authentication authentication) {
+        ChatRoom chatRoom = chatRoomService.findChatRoom(roomId, authentication);
+        ChatRoomDto.DetailResponse responseDto = chatRoomMapper.chatRoomToChatRoomDetailResponseDto(chatRoom, chatLogMapper);
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping
+    public ResponseEntity getChatRooms(Authentication authentication) {
+        List<ChatRoom> chatRooms = chatRoomService.findChatRooms(authentication);
+
+        return ResponseEntity.ok(chatRoomMapper.chatRoomsToChatRoomSimpleResponseDtos(chatRooms));
+    }
 }
