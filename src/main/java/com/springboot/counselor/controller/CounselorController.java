@@ -222,4 +222,14 @@ public class CounselorController {
                 new SingleResponseDto<>(null), HttpStatus.OK
         );
     }
+    // 특정 상담사의 특정일 예약되지 않은 상담 시간 조회
+    @GetMapping("/available-dates/{counselorId}")
+    public ResponseEntity<?> getAvailableDate(Authentication authentication,
+                                              @PathVariable @Positive long counselorId,
+                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        AvailableDate availableDate = counselorService.getFilteredAvailableDate(counselorId, date);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(counselorMapper.availableDateToAvailableDateDto(availableDate)), HttpStatus.OK
+        );
+    }
 }

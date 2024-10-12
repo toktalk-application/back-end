@@ -249,6 +249,22 @@ public class CounselorService {
         Optional<AvailableDate> optionalAvailableDate = Optional.ofNullable(counselor.getAvailableDate(date));
         return optionalAvailableDate.orElseThrow(() -> new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE));
     }
+    // 특정 날짜에 대한 예약 가능한 시간만을 포함하는 AvailableDate 조회
+    public AvailableDate getFilteredAvailableDate(long counselorId, LocalDate date){
+        Counselor counselor = findVerifiedCounselor(counselorId);
+
+        Optional<AvailableDate> optionalAvailableDate = Optional.ofNullable(counselor.getAvailableDate(date));
+        AvailableDate availableDate = optionalAvailableDate.orElseThrow(() -> new BusinessLogicException(ExceptionCode.UNAVAILABLE_DATE));
+
+        // 예약 잡힌 시간은 빼고 반환
+        Map<LocalTime, AvailableTime> filteredAvailableTimes = availableDate.getAvailableTimes().entrySet().stream()
+                .filter(entry -> entry.getValue().getReservation() == null)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        // cascade orphan removal 땜에 새로 만들어서 반환
+        AvailableDate tempAvailableDate = new AvailableDate();
+        tempAvailableDate.setAvailableTimes(filteredAvailableTimes);
+        return tempAvailableDate;
+    }
     // 특정 날짜에 대한 AvailableDate 수정
     public void updateAvailableDate(long counselorId, AvailableDateDto.Patch patchDto){
         LocalDate date = patchDto.getDate();
