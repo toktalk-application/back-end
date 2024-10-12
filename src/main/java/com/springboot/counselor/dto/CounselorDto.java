@@ -86,6 +86,8 @@ public class CounselorDto {
         private String expertise;
         private String sessionDescription;
         private String profileImage;
+        private String rating;
+        private int reviews;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
     }

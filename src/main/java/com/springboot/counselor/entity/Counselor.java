@@ -85,6 +85,12 @@ public class Counselor {
     @Column
     private String currentCompanyTel;
 
+    @Column
+    private int totalRating; // 별점 합산
+
+    @Column
+    private int reviews;
+
     @OneToMany(mappedBy = "counselor", cascade = CascadeType.ALL, orphanRemoval = true)
     private Map<LocalDate, AvailableDate> availableDates = new HashMap();
 
@@ -164,5 +170,11 @@ public class Counselor {
                 .filter(entry -> entry.getKey().getDayOfWeek().equals(dayOfWeek))
                 .map(entry -> entry.getValue())
                 .collect(Collectors.toList());
+    }
+
+    // 리뷰 달릴때 평점 업데이트
+    public void updateRating(int rating){
+        totalRating += rating;
+        reviews ++;
     }
 }

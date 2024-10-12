@@ -3,6 +3,7 @@ package com.springboot.reservation.service;
 import com.springboot.auth.CustomAuthenticationToken;
 import com.springboot.auth.dto.LoginDto;
 import com.springboot.counselor.entity.Counselor;
+import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
@@ -29,6 +30,7 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final CounselorService counselorService;
     private final MemberService memberService;
+    private final CounselorRepository counselorRepository;
 
     // 상담 예약 등록
     public Reservation createReservation(Reservation reservation, LocalDate date, List<LocalTime> startTimes){
@@ -75,6 +77,12 @@ public class ReservationService {
         // 문제 없으면 리뷰 등록
         reservation.setReview(review); // Reservation <-> Review 양방향 set 메서드
         reservationRepository.save(reservation);
+
+        // 상담사 평점 업데이트
+        long counselorId = reservation.getCounselorId();
+        Counselor counselor = counselorService.findCounselor(counselorId);
+        counselor.updateRating(review.getRating());
+        counselorRepository.save(counselor);
     }
     // 상담사 진단 등록
     public void registerReport(long reservationId, Report report, Authentication authentication){
