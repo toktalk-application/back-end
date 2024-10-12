@@ -3,6 +3,7 @@ package com.springboot.auth;
 import com.springboot.auth.userdetails.CounselorDetailsService;
 import com.springboot.auth.userdetails.MemberDetailsService;
 import com.springboot.auth.dto.LoginDto;
+import com.springboot.utils.CredentialUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -39,7 +40,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String userId = authentication.getName();
         String password = authentication.getCredentials().toString();
 
-        LoginDto.UserType userType = ((CustomAuthenticationToken) authentication).getUserType();
+        LoginDto.UserType userType = CredentialUtil.getUserType(authentication);
 
         //(4) 인증을 위한 Authentication 전달
         UserDetails userDetails;

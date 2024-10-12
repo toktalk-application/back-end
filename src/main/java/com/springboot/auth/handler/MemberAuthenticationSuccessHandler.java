@@ -39,22 +39,32 @@ public class MemberAuthenticationSuccessHandler implements AuthenticationSuccess
 
         LoginDto.UserType usertype = customAuth.getUserType();
         long identifier = -1;
+        String nickname = "";
+        String name = "";
         switch (usertype){
             case MEMBER:
                 Member member = memberService.findMember(authentication.getName());
                 identifier = member.getMemberId();
+                nickname = member.getNickname();
                 break;
             case COUNSELOR:
                 Counselor counselor = counselorService.findCounselor(authentication.getName());
                 identifier = counselor.getCounselorId();
+                name = counselor.getName();
         }
 
         // 응답에 넣어줄 데이터
         Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("userId`", customAuth.getName());
+        responseBody.put("userId", customAuth.getName());
         responseBody.put("authorities", customAuth.getAuthorities());
         responseBody.put("usertype", customAuth.getUserType()); // 추가된 정보
         responseBody.put("identifier", identifier);
+        if(usertype.equals(LoginDto.UserType.MEMBER)){
+            responseBody.put("nickname", nickname);
+        }
+        if(usertype.equals(LoginDto.UserType.COUNSELOR)){
+            responseBody.put("name", name);
+        }
 
         // 응답 설정
         response.setContentType("application/json");

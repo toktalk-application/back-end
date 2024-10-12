@@ -41,7 +41,7 @@ public class Counselor {
     private Gender gender;
 
     @Enumerated(EnumType.STRING)
-    private Status counselorStatus = Status.VERIFICATION_WAITING;
+    private Status counselorStatus = Status.ACTIVE;
 
     @Column
     private String ci;
