@@ -39,6 +39,11 @@ public interface CounselorMapper {
                         career.getResponsibility()
                 )).collect(Collectors.toList());
 
+        // 평균 별점 계산
+        double rating = (double) counselor.getTotalRating() / counselor.getReviews();
+        double formattedRating = Math.round(rating * 10) / 10.0;
+        String ratingStr = formattedRating == 0.0 ? "없음" : String.valueOf(formattedRating);
+
         return new CounselorDto.Response(
                 counselor.getCounselorId(),
                 counselor.getBirth(),
@@ -74,6 +79,8 @@ public interface CounselorMapper {
                 counselor.getExpertise(),
                 counselor.getSessionDescription(),
                 counselor.getProfileImage(),
+                ratingStr,
+                counselor.getReviews(),
                 counselor.getCreatedAt(),
                 counselor.getModifiedAt()
         );
