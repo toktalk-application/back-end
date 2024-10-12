@@ -1,16 +1,16 @@
 package com.springboot.toss.dto;
 
-import com.springboot.toss.entity.Payment;
-import lombok.*;
-
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 public class PaymentResDto {
-    private String payType; // 결제 타입
+    private String paymentType; // 결제 타입
     private Long amount; // 가격 정보
     private String orderName; // 주문명
     private String orderId; // 주문 Id

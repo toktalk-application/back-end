@@ -6,7 +6,6 @@ import com.springboot.exception.ExceptionCode;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.toss.config.TossPaymentConfig;
 import com.springboot.toss.dto.PaymentDto;
-import com.springboot.toss.dto.PaymentFailDto;
 import com.springboot.toss.dto.PaymentResDto;
 import com.springboot.toss.entity.Payment;
 import com.springboot.toss.mapper.PaymentMapper;
@@ -30,7 +29,7 @@ public class PaymentController {
     private final PaymentMapper paymentMapper;
 
     @PostMapping
-    public ResponseEntity<SingleResponseDto<PaymentResDto>> requestTossPayment(
+    public ResponseEntity requestTossPayment(
             Authentication authentication,
             @RequestBody @Valid PaymentDto paymentDto
     ) {
@@ -46,10 +45,10 @@ public class PaymentController {
         PaymentResDto paymentResDto = paymentMapper.entityToPaymentResDto(savedPayment);
 
         // successUrl과 failUrl 설정
-        paymentResDto.setSuccessUrl(paymentDto.getYourSuccessUrl() != null ?
-                paymentDto.getYourSuccessUrl() : tossPaymentConfig.getSuccessUrl());
-        paymentResDto.setFailUrl(paymentDto.getYourFailUrl() != null ?
-                paymentDto.getYourFailUrl() : tossPaymentConfig.getFailUrl());
+//        paymentResDto.setSuccessUrl(paymentDto.getYourSuccessUrl() != null ?
+//                paymentDto.getYourSuccessUrl() : tossPaymentConfig.getSuccessUrl());
+//        paymentResDto.setFailUrl(paymentDto.getYourFailUrl() != null ?
+//                paymentDto.getYourFailUrl() : tossPaymentConfig.getFailUrl());
 
         return ResponseEntity.ok(new SingleResponseDto<>(paymentResDto));
     }

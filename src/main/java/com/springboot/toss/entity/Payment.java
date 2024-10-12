@@ -1,7 +1,9 @@
 package com.springboot.toss.entity;
 
 import com.springboot.member.entity.Member;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,18 +24,13 @@ public class Payment{
 
     @Column(nullable = false, name = "pay_type")
     @Enumerated(EnumType.STRING)
-    private PayType payType;
+    private PayType paymentType;
 
     @Column(nullable = false, name = "pay_amount")
-    private long amount;
-
-    @Column(nullable = false, name = "pay_name")
-    private String orderName;
+    private int amount;
 
     @Column(nullable = false, name = "order_id")
     private String orderId;
-
-    private boolean paySuccessYN;
 
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "member")
@@ -42,11 +39,8 @@ public class Payment{
     @Column
     private String paymentKey;
 
-    @Column
-    private String failReason;
-
-    @Column
-    private String cancelReason;
+    @Enumerated(EnumType.STRING)
+    private PayStatus payStatus = PayStatus.PENDING;
 
     @Column
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -56,11 +50,26 @@ public class Payment{
         TOSS_PAY("토스페이"),
         SAMSUNG_PAY("삼성페이"),
         NAVER_PAY("네이버페이"),
-        KAKAO_PAY("카카오페이");
+        KAKAO_PAY("카카오페이"),
+        CARD_PAY("카드결제"),
+        NORMAL("일반 결제");
 
         private final String description;
 
         PayType(String description) {
+            this.description = description;
+        }
+    }
+
+    @Getter
+    public enum PayStatus{
+        PENDING("결제중"),
+        COMPLETED("결제완료"),
+        REFUNDED("환불완료");
+
+        private final String description;
+
+        PayStatus(String description) {
             this.description = description;
         }
     }
