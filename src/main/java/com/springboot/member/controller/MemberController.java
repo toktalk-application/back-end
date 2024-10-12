@@ -143,26 +143,27 @@ public class MemberController {
         );
     }
 
-    // 사용자 검증후 Fcm 토큰을 받아 Fcm토큰을 저장하는 Api
-    @PutMapping("/{memberId}/fcm-token")
-    public ResponseEntity<?> updateFcmToken(@PathVariable long memberId,
-                                            @RequestBody MemberDto.FcmTokenDto fcmTokenDto,
+    @PostMapping("/fcm-token")
+    public ResponseEntity<?> updateFcmToken(@RequestBody MemberDto.FcmTokenDto fcmTokenDto,
                                             Authentication authentication) {
-//         사용자의 로그인 id 를 추출
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String userId = userDetails.getUsername();
+        try {
+            System.out.println("FCM 토큰 업데이트 요청 받음");
 
-        // userId을 이용해 memberId를 조회하는 메서드
-        long authenticatedMemberId = memberService.getMemberIdByUserId(userId);
+            String userId = authentication.getName();
+            System.out.println("인증된 사용자 ID: " + userId);
 
-        // 위에서 찾은 memberId를 와 로그인한 memberId가 일치하는지 확인
-        if (authenticatedMemberId != memberId) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Access denied");
+            long authenticatedMemberId = memberService.getMemberIdByUserId(userId);
+            System.out.println("조회된 memberId: " + authenticatedMemberId);
+
+            memberService.updateFcmToken(authenticatedMemberId, fcmTokenDto.getFcmToken());
+            System.out.println("FCM 토큰 업데이트 성공");
+
+            return ResponseEntity.ok("FCM token updated successfully");
+        } catch (Exception e) {
+            System.out.println("FCM 토큰 업데이트 중 오류 발생: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating FCM token: " + e.getMessage());
         }
-
-        // 검증이 끝나면 최종적으로 해당 회원에 fcm토큰을 저장
-        memberService.updateFcmToken(memberId, fcmTokenDto.getFcmToken());
-        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 //    @PutMapping("/{userId}/fcm-token")
