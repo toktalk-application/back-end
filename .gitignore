@@ -176,3 +176,7 @@ $RECYCLE.BIN/
 
 src/main/resources/firebase/toktalk-4e546-firebase-adminsdk-fhoe5-01668796f1.json
 src/main/resources/firebase/toktalk-app-firebase-adminsdk-4d2no-8c8b3e32e8.json
+
+# .gitignore 파일에 추가
+.DS_Store
+
