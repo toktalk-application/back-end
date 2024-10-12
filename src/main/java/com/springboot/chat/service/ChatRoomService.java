@@ -92,7 +92,7 @@ public class ChatRoomService {
             return findVerifiedChatRoom(roomId);
         } else {
             Counselor findCounselor = counselorService.findCounselor(
-                    Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"))
+                    Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"))
             );
 
             ChatRoom chatRoom = findVerifiedChatRoom(roomId);
@@ -117,7 +117,7 @@ public class ChatRoomService {
             return chatRoomRepository.findByMember(findMember);
         } else {
             Counselor findCounselor = counselorService.findCounselor(
-                    Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"))
+                    Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"))
             );
 
             return chatRoomRepository.findByCounselor(findCounselor);
