@@ -176,6 +176,12 @@ public class CounselorService {
         }
     }
 
+    // default days 초기화 여부 조회
+    public boolean areDefaultDaysInitialized(long counselorId){
+        Counselor counselor = findVerifiedCounselor(counselorId);
+        return !counselor.getAvailableDates().isEmpty();
+    }
+
     // 상담사의 이번 달 포함 n달 치 AvailableTimes 추가 (새로 추가)
     public void addInitialAvailableTimes(long counselorId, int months){
         Counselor counselor = findVerifiedCounselor(counselorId);

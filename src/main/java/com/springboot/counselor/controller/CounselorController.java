@@ -170,6 +170,16 @@ public class CounselorController {
         );
     }
 
+    // 자신이 기본 상담 시간을 등록했는지 여부 조회
+    @GetMapping("/default-days-initializations")
+    public ResponseEntity<?> areDefaultDaysInitialized(Authentication authentication){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(counselorService.areDefaultDaysInitialized(counselorId)), HttpStatus.OK
+        );
+    }
+
     // 자신의 기본 상담 시간 조회
     @GetMapping("/default-days")
     public ResponseEntity<?> getDefaultDay(Authentication authentication,
