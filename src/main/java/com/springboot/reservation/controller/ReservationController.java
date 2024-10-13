@@ -111,6 +111,19 @@ public class ReservationController {
         );
     }
 
+    // 회원이 특정월에 대해 자신이 예약한 모든 상담 조회
+    @GetMapping("/monthly-detail")
+    public ResponseEntity<?> getDetailedMonthlyReservations(Authentication authentication,
+                                                    @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+
+        List<Reservation> reservations = reservationService.getDetailedMonthlyReservations(memberId, month);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(reservations)), HttpStatus.OK
+        );
+    }
+
     // 특정 상담사에 대한 특정일 또는 월별 예약 정보 조회
     @GetMapping
     public ResponseEntity<?> getReservations(Authentication authentication,
