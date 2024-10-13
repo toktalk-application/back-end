@@ -60,7 +60,7 @@ public class ReservationController {
         tempReservation.setCounselorName(counselor.getName());
 
         // 상담사는 자격 인증이 완료되어 있고 활동 상태여야 함
-        /*if(counselor.getCounselorStatus() != Counselor.CounselorStatus.ACTIVE) throw new BusinessLogicException(ExceptionCode.INVALID_COUNSELOR);*/
+        if(counselor.getCounselorStatus() != Counselor.Status.ACTIVE) throw new BusinessLogicException(ExceptionCode.INVALID_COUNSELOR);
 
         // 서비스 로직 실행
         Reservation reservation = reservationService.createReservation(tempReservation, postDto.getDate(), postDto.getStartTimes());
@@ -145,6 +145,19 @@ public class ReservationController {
         }
         // 쿼리 파라미터를 아무것도 안 넣었을 때
         throw new BusinessLogicException(ExceptionCode.PARAM_NOT_FOUND);
+    }
+
+    // 특정 상담사에 대한 월별 예약 세부 정보 조회
+    @GetMapping("/{counselorId}/monthly-detail")
+    public ResponseEntity<?> getMonthlyDetailReservations(Authentication authentication,
+                                                          @PathVariable @Positive long counselorId,
+                                                          @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
+
+        List<Reservation> reservations = reservationService.getMonthlyDetailReservations(counselorId, month);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(reservations)), HttpStatus.OK
+        );
     }
 
     // 리뷰 등록
