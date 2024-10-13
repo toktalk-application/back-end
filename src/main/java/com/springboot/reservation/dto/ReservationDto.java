@@ -25,6 +25,7 @@ public class ReservationDto {
         private Reservation.CounselingType type;
         private LocalDate date;
         private List<LocalTime> startTimes;
+        private int fee;
     }
 
     @Getter
@@ -45,6 +46,7 @@ public class ReservationDto {
         private LocalDate date;
         private String startTime;
         private String endTime;
+        private int fee;
         private ReviewDto.Response review;
         private ReportDto.Response report;
     }

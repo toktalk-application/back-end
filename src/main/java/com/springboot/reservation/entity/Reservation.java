@@ -41,6 +41,9 @@ public class Reservation {
     private String cancelComment;
 
     @Column
+    private int fee;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private CounselingType type;
 

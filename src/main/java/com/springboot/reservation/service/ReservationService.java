@@ -139,6 +139,18 @@ public class ReservationService {
         return monthlyReservations;
     }
 
+    // 특정 회원이 특정월에 예약한 모든 상담 조회
+    public List<Reservation> getDetailedMonthlyReservations(long memberId, YearMonth month){
+        Member member = memberService.findMember(memberId);
+
+        // 멤버의 전체 예약 가져오기
+        List<Reservation> reservations = reservationRepository.findByMember(member);
+        // 해당월에 잡힌 예약만 반환
+        return reservations.stream()
+                .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getReservationTimes().get(0).getAvailableDate().getDate(), month))
+                .collect(Collectors.toList());
+    }
+
     // 특정 상담사의 특정 날짜에 잡힌 예약 목록 조회
     public List<Reservation> getDailyReservationsWithCounselor(long counselorId, LocalDate date){
         Counselor counselor = counselorService.findCounselor(counselorId);
