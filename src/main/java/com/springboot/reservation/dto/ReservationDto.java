@@ -47,6 +47,7 @@ public class ReservationDto {
         private String startTime;
         private String endTime;
         private int fee;
+        private String cancelComment;
         private ReviewDto.Response review;
         private ReportDto.Response report;
     }
