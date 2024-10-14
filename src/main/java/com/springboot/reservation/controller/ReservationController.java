@@ -52,6 +52,7 @@ public class ReservationController {
 
         // Member가 아니면 예약 불가
         if(CredentialUtil.getUserType(authentication) != LoginDto.UserType.MEMBER) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
+
         // 멤버 찾아서 넣기
         long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication,"memberId"));
         Member member = memberService.findMember(memberId);
