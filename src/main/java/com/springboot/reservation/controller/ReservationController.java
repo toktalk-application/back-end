@@ -6,6 +6,7 @@ import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.firebase.service.FirebaseNotificationService;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
 import com.springboot.reservation.dto.ReportDto;
@@ -41,6 +42,7 @@ public class ReservationController {
     private final ReservationMapper reservationMapper;
     private final MemberService memberService;
     private final CounselorService counselorService;
+    private final FirebaseNotificationService firebaseNotificationService;
 
     // 상담 예약 등록
     @PostMapping
@@ -64,9 +66,11 @@ public class ReservationController {
 
         // 서비스 로직 실행
         Reservation reservation = reservationService.createReservation(tempReservation, postDto.getDate(), postDto.getStartTimes());
-
+        boolean notificationSent = firebaseNotificationService.sendReservationNotification(reservation.getReservationId());
         URI location = UriCreator.createUri(DEFAULT_URL, reservation.getReservationId());
-        return ResponseEntity.created(location).build();
+        return ResponseEntity.created(location)
+                .header("Notification-Sent", String.valueOf(notificationSent))
+                .build();
     }
 
     // 단일 상담 조회

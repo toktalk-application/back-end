@@ -91,4 +91,12 @@ public class CounselorDto {
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class FcmTokenDto {
+        private String fcmToken;
+
+    }
 }

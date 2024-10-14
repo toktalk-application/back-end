@@ -12,6 +12,7 @@ import com.springboot.counselor.mapper.CounselorMapper;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.member.dto.MemberDto;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.service.ReservationService;
@@ -241,5 +242,28 @@ public class CounselorController {
         return new ResponseEntity<>(
                 new SingleResponseDto<>(counselorMapper.availableDateToAvailableDateDto(availableDate)), HttpStatus.OK
         );
+    }
+
+    @PostMapping("/fcm-token")
+    public ResponseEntity<?> updateFcmToken(@RequestBody CounselorDto.FcmTokenDto fcmTokenDto,
+                                            Authentication authentication) {
+        try {
+            System.out.println("FCM 토큰 업데이트 요청 받음");
+
+            String userId = authentication.getName();
+            System.out.println("인증된 사용자 ID: " + userId);
+
+            long authenticatedMemberId = counselorService.getCounselorIdByUserId(userId);
+            System.out.println("조회된 memberId: " + authenticatedMemberId);
+
+            counselorService.updateFcmToken(authenticatedMemberId, fcmTokenDto.getFcmToken());
+            System.out.println("FCM 토큰 업데이트 성공");
+
+            return ResponseEntity.ok("FCM token updated successfully");
+        } catch (Exception e) {
+            System.out.println("FCM 토큰 업데이트 중 오류 발생: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating FCM token: " + e.getMessage());
+        }
     }
 }

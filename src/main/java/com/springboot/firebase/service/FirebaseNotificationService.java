@@ -4,6 +4,9 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import com.springboot.counselor.service.CounselorService;
+import com.springboot.exception.BusinessLogicException;
+import com.springboot.exception.ExceptionCode;
 import com.springboot.member.repository.MemberRepository;
 import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.reservation.repository.ReservationRepository;
@@ -18,14 +21,16 @@ public class FirebaseNotificationService {
     private final CounselorRepository counselorRepository;
     private final ReservationRepository reservationRepository;
     private final FirebaseMessaging firebaseMessaging;
+    private final CounselorService counselorService;
 
     public FirebaseNotificationService(MemberRepository memberRepository,
                                        CounselorRepository counselorRepository,
-                                       ReservationRepository reservationRepository, FirebaseMessaging firebaseMessaging) {
+                                       ReservationRepository reservationRepository, FirebaseMessaging firebaseMessaging, CounselorService counselorService) {
         this.memberRepository = memberRepository;
         this.counselorRepository = counselorRepository;
         this.reservationRepository = reservationRepository;
         this.firebaseMessaging = firebaseMessaging;
+        this.counselorService = counselorService;
     }
 
     public void sendMessage(String token, String title, String body) throws FirebaseMessagingException {
@@ -39,6 +44,32 @@ public class FirebaseNotificationService {
 
         String response = firebaseMessaging.send(message);
         System.out.println("Successfully sent message: " + response);
+    }
+
+    public boolean sendReservationNotification(Long reservationId) {
+        try {
+            Reservation reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.RESERVATION_NOT_FOUND));
+            Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
+
+            String fcmToken = counselor.getFcmToken();
+            if (fcmToken == null || fcmToken.isEmpty()) {
+                return false;
+            }
+
+            Message message = Message.builder()
+                    .setToken(fcmToken)
+                    .setNotification(Notification.builder()
+                            .setTitle("새로운 상담 예약")
+                            .setBody("새로운 상담이 예약되었습니다. 확인해 주세요.")
+                            .build())
+                    .build();
+
+            String response = FirebaseMessaging.getInstance().send(message);
+            return response != null && !response.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // 예약된 상담 찾기
@@ -60,12 +91,12 @@ public class FirebaseNotificationService {
     }
 
     // 상담 예약 알림
-    public void sendReservationNotification(Long reservationId) {
-        Reservation reservation = getReservation(reservationId);
-        Counselor counselor = getCounselor(reservation.getCounselorId());
-
-        sendNotification(counselor.getFcmToken(), "새로운 상담 예약", "새로운 상담이 예약되었습니다. 확인해 주세요.");
-    }
+//    public void sendReservationNotification(Long reservationId) {
+//        Reservation reservation = getReservation(reservationId);
+//        Counselor counselor = getCounselor(reservation.getCounselorId());
+//
+//        sendNotification(counselor.getFcmToken(), "새로운 상담 예약", "새로운 상담이 예약되었습니다. 확인해 주세요.");
+//    }
 
     // 상담 시작전 알림
     public void sendReservationReminder(Long reservationId) {
