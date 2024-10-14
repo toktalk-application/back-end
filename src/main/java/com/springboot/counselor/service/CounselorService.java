@@ -371,4 +371,20 @@ public class CounselorService {
                 .filter(counselor -> counselor.getCounselorStatus().equals(Counselor.Status.ACTIVE))
                 .collect(Collectors.toList());
     }
+
+    // 검증후 Fcm토큰을 저장하는 메서드
+    @Transactional
+    public void updateFcmToken(long counselorId, String fcmToken) {
+        Counselor counselor = counselorRepository.findById(counselorId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.COUNSELOR_NOT_FOUND));
+        counselor.setFcmToken(fcmToken);
+        counselorRepository.save(counselor);
+    }
+
+    // 사용자의 로그인Id를 사용해 사용자 memberId를 조회하는 메서드
+    public long getCounselorIdByUserId(String username) {
+        return counselorRepository.findByUserId(username)
+                .map(Counselor::getCounselorId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
 }
