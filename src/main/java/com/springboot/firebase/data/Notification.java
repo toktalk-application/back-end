@@ -17,6 +17,7 @@ public class Notification implements Serializable {
     private static final long serialVersionUID = 1L;
     private String notificationId;
     private Long counselorId;
+    private long reservationId;
     private String title;
     private String body;
     private LocalDateTime createdAt;

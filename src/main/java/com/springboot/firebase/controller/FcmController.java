@@ -85,6 +85,17 @@ public class FcmController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<?> deleteNotification(Authentication authentication, @PathVariable String notificationId) {
+        String userId = getUserIdFromAuthentication(authentication);
+        boolean deleted = fcmService.deleteNotification(userId, notificationId);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     private String getUserIdFromAuthentication(Authentication authentication) {
         if (authentication == null || authentication.getPrincipal() == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication");
