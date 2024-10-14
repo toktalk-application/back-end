@@ -89,14 +89,15 @@ public class ReservationController {
     // 멤버가 자신이 예약한 특정일 상담 목록 조회
     @GetMapping("/daily")
     public ResponseEntity<?> getMyReservations(Authentication authentication,
-                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                               @RequestParam(required = false) boolean exceptCancelledReservation){
         // 회원만 요청 가능
         LoginDto.UserType userType = CredentialUtil.getUserType(authentication);
         if(!userType.equals(LoginDto.UserType.MEMBER)) throw new BusinessLogicException(ExceptionCode.INVALID_USERTYPE);
 
         long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
 
-        List<Reservation> reservations = reservationService.getDailyReservationsByMember(memberId, date);
+        List<Reservation> reservations = reservationService.getDailyReservationsByMember(memberId, date, exceptCancelledReservation);
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(reservations)), HttpStatus.OK

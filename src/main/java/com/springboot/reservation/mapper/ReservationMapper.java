@@ -30,9 +30,6 @@ public interface ReservationMapper {
         LocalTime startTime = timePeriod.getStartTime();
         LocalTime endTime = timePeriod.getEndTime();
 
-        // 예약 취소된 상태면 reservationTimes가 비어 있기 때문에 예외 처리
-        LocalDate date = reservation.getReservationTimes().isEmpty() ? null : reservation.getReservationTimes().get(0).getAvailableDate().getDate();
-
         // 리뷰 dto로 변환
         ReviewDto.Response reviewDto = null;
         if(reservation.getReview() != null){
@@ -61,7 +58,7 @@ public interface ReservationMapper {
                 reservation.getComment(),
                 reservation.getType(),
                 reservation.getReservationStatus(),
-                date,
+                reservation.getDate(),
                 startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                 endTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                 reservation.getFee(),
