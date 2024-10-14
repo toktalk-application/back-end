@@ -62,6 +62,7 @@ public interface ReservationMapper {
                 startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                 endTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                 reservation.getFee(),
+                reservation.getCancelComment(),
                 reviewDto,
                 reportDto
         );
