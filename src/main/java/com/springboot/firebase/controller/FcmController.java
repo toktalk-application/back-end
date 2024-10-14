@@ -1,10 +1,18 @@
 package com.springboot.firebase.controller;
 
+import com.springboot.firebase.data.Notification;
 import com.springboot.firebase.dto.FcmSendDto;
 import com.springboot.firebase.service.FirebaseNotificationService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -59,5 +67,28 @@ public class FcmController {
         // 필요하다면 서비스에 sendMessage 메소드를 public으로 변경하고 호출해야 합니다.
         // fcmService.sendMessage(fcmSendDto);
         return ResponseEntity.ok("FCM message sent successfully");
+    }
+
+    @GetMapping
+    public ResponseEntity<List<com.springboot.firebase.data.Notification>> getUserNotifications(Authentication authentication) {
+        String userId = getUserIdFromAuthentication(authentication);
+        List<com.springboot.firebase.data.Notification> notifications = fcmService.getNotificationsForUser(userId);
+        return ResponseEntity.ok(notifications);
+    }
+
+    @PostMapping("/{notificationId}/read")
+    public ResponseEntity<?> markNotificationAsRead(
+            Authentication authentication,
+            @PathVariable String notificationId) {
+        String userId = getUserIdFromAuthentication(authentication);
+        fcmService.markNotificationAsRead(userId, notificationId);
+        return ResponseEntity.ok().build();
+    }
+
+    private String getUserIdFromAuthentication(Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication");
+        }
+        return authentication.getPrincipal().toString();
     }
 }
