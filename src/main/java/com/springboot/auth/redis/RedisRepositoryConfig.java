@@ -1,5 +1,8 @@
 package com.springboot.auth.redis;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +11,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -63,19 +67,22 @@ public class RedisRepositoryConfig {
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
-        // RedisTemplate 객체를 생성합니다.
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-
-        // RedisConnectionFactory를 RedisTemplate에 설정합니다.
-        // RedisTemplate이 Redis 서버와의 연결을 사용할 수 있도록 해줍니다.
         redisTemplate.setConnectionFactory(redisConnectionFactory());
 
-        // Redis의 키와 값을 직렬화하는 방식을 설정합니다.
-        // 여기서는 StringRedisSerializer를 사용하여 키와 값을 문자열로 직렬화합니다.
-        // 이 설정은 Redis에 데이터를 저장할 때 직렬화 방식을 지정하는 것으로, 데이터 저장 형식을 정의합니다.
+        // 키는 문자열로 직렬화
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
 
-        return redisTemplate; // RedisTemplate 빈 반환
+        // 값은 JSON으로 직렬화
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+        objectMapper.registerModule(new JavaTimeModule()); // LocalDateTime 지원을 위해 추가
+        serializer.setObjectMapper(objectMapper);
+
+        redisTemplate.setValueSerializer(serializer);
+        redisTemplate.setHashValueSerializer(serializer);
+
+        return redisTemplate;
     }
 }
