@@ -72,6 +72,7 @@ public class FirebaseNotificationService {
             com.springboot.firebase.data.Notification notification = new com.springboot.firebase.data.Notification(
                     UUID.randomUUID().toString(),
                     counselor.getCounselorId(),
+                    reservation.getReservationId(),
                     "새로운 상담 예약",
                     "새로운 상담이 예약되었습니다. 확인해 주세요.",
                     LocalDateTime.now(),
@@ -106,6 +107,31 @@ public class FirebaseNotificationService {
             return result;
         } catch (Exception e) {
             System.out.println("알림 전송 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteNotification(String userId, String notificationId) {
+        String key = "notifications:" + userId;
+        try {
+            List<Object> objectList = redisTemplate.opsForList().range(key, 0, -1);
+            if (objectList != null) {
+                for (Object obj : objectList) {
+                    if (obj instanceof com.springboot.firebase.data.Notification) {
+                        com.springboot.firebase.data.Notification notification = (com.springboot.firebase.data.Notification) obj;
+                        if (notification.getNotificationId().equals(notificationId)) {
+                            long removed = redisTemplate.opsForList().remove(key, 1, notification);
+                            System.out.println("알림 삭제 완료: notificationId = " + notificationId + ", 삭제된 항목 수 = " + removed);
+                            return removed > 0;
+                        }
+                    }
+                }
+            }
+            System.out.println("알림을 찾을 수 없음: userId = " + userId + ", notificationId = " + notificationId);
+            return false;
+        } catch (Exception e) {
+            System.out.println("알림 삭제 중 오류 발생: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
