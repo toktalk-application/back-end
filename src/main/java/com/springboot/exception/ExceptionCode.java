@@ -32,6 +32,9 @@ public enum ExceptionCode {
     UNAVAILABLE_TIME(404, "Given time is not available"),
     LICENSE_NOT_FOUND(404, "License not found"),
     CAREER_NOT_FOUND(404, "Career not found"),
+    INVALID_PAYMENT_AMOUNT(404, "Invalid_Payment_Amount"),
+    PAYMENT_NOT_FOUND(404, "Payment_Not_Found"),
+    PAYMENT_FAILED(404, "Payment_Failed"),
     DUPLICATED_USERID(409, "Duplicated userid"),
     DUPLICATED_NICKNAME(409, "Duplicated nickname"),
     SAME_PASSWORD(409, "The new password cannot be the same as the current one"),
@@ -40,9 +43,6 @@ public enum ExceptionCode {
     REPORT_EXIST(409, "Report already exists"),
     CREDENTIAL_NOT_FOUND(500, "Some credential field not found"),
     INVALID_MONTH_PARAMETER(500, "Months parameter of addAvailableTime() method in CounselorService must be positive"),
-    INVALID_PAYMENT_AMOUNT(404, "Invalid_Payment_Amount"),
-    PAYMENT_NOT_FOUND(404, "Payment_Not_Found"),
-    PAYMENT_FAILED(404, "Payment_Failed")
     ;
     @Getter
     private int status;

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -44,6 +45,9 @@ public class Reservation {
     private int fee;
 
     @Column
+    private LocalDate date;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private CounselingType type;
 
@@ -63,6 +67,12 @@ public class Reservation {
 
     @Column
     private LocalDateTime modifiedAt = LocalDateTime.now();
+
+    @Column
+    private LocalTime startTime;
+
+    @Column
+    private LocalTime endTime;
 
     public enum CounselingType {
         CALL,
@@ -86,18 +96,10 @@ public class Reservation {
 
     // 예약의 시작 시점과 종료 시점 구하기
     public TimePeriod getReservationTimePeriod(){
-        // 예약 타임들이 정렬이 안 되어 있다면
-        /*LocalTime startTime = LocalTime.MAX;
-        LocalTime endTime = LocalTime.MIN;
-
-        // startTime중 가장 이른 시점과 endTime중 가장 나중 시점을 뽑기
-        for(AvailableTime time : reservationTimes){
-            startTime = startTime.isBefore(time.getStartTime()) ? startTime : time.getStartTime();
-            endTime = endTime.isAfter(time.getEndTime()) ? endTime : time.getEndTime();
-        }
-        return new TimePeriod(startTime, endTime);*/
         // 이미 예약 타임들이 정렬되어 DB에 들어가 있다면
-        return new TimePeriod(reservationTimes.get(0).getStartTime(), reservationTimes.get(reservationTimes.size() - 1).getEndTime());
+        /*return new TimePeriod(reservationTimes.get(0).getStartTime(), reservationTimes.get(reservationTimes.size() - 1).getEndTime());*/
+        // 예약 취소시 시간을 조회할 수 없기 때문에 그냥 필드 비정규화함
+        return new TimePeriod(startTime, endTime);
     }
     @Getter
     @Setter
@@ -105,5 +107,9 @@ public class Reservation {
     public class TimePeriod{
         private LocalTime startTime;
         private LocalTime endTime;
+    }
+
+    public boolean isCancelled(){
+        return reservationStatus.equals(ReservationStatus.CANCELLED_BY_CLIENT) || reservationStatus.equals(ReservationStatus.CANCELLED_BY_COUNSELOR);
     }
 }

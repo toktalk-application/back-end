@@ -53,6 +53,12 @@ public class ReservationService {
             // 첫 예약 타임이 9시라면 그 다음 타임은 10시, 다다음은 11시여야 함. 아니라면 예외 반환
             if(startTimes.get(i).getHour() != firstHour + i) throw new BusinessLogicException(ExceptionCode.DISCONTINUOUS_TIME);
         }
+        // ㅡㅡㅡ 시간과 관련된 정보들 비정규화 ㅡㅡㅡ (예약 취소시 관련 정보가 지워지면서 조회가 불가능해지는 문제 해결)
+        // 예약일 비정규화
+        reservation.setDate(date);
+        // 시작시간 ~ 끝시간 비정규화
+        reservation.setStartTime(startTimes.get(0));
+        reservation.setEndTime(startTimes.get(startTimes.size() - 1).plusMinutes(50));
         return reservationRepository.save(reservation);
     }
     // 리뷰 등록
@@ -109,12 +115,18 @@ public class ReservationService {
     }
 
     // 특정 회원이 특정 날짜에 잡은 예약 목록 조회
-    public List<Reservation> getDailyReservationsByMember(long memberId, LocalDate date){
+    public List<Reservation> getDailyReservationsByMember(long memberId, LocalDate date, boolean exceptCancelledReservation){
         Member member = memberService.findMember(memberId);
         List<Reservation> reservations = reservationRepository.findByMember(member);
 
         return reservations.stream()
-                .filter(reservation -> reservation.getReservationTimes().get(0).getAvailableDate().getDate().equals(date))
+                .filter(reservation -> {
+                    boolean dateMatched = reservation.getDate().equals(date);
+
+                    // exceptCancelledReservation이 false면 그냥 통과, true일 경우 취소되지 않은 예약만 통과
+                    return dateMatched && (!exceptCancelledReservation || !reservation.isCancelled());
+                })
+                .sorted(Comparator.comparing(Reservation::getStartTime)) // 시간 기준으로 오름차순 정렬
                 .collect(Collectors.toList());
     }
 
@@ -124,15 +136,15 @@ public class ReservationService {
 
         List<Reservation> reservations = reservationRepository.findByMember(member).stream()
                 .filter(reservation -> {
-                    LocalDate date = reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+                    LocalDate date = reservation.getDate();
                     return CalendarUtil.isLocalDateInYearMonth(date, month);
                 }).collect(Collectors.toList());
 
-        // 각 날짜별로 예약이 있는지 알아보기
+        // 각 날짜별로 취소되지 않은 예약이 있는지 알아보기
         Map<LocalDate, Boolean> monthlyReservations = new HashMap<>();
         reservations.forEach(reservation -> {
-            LocalDate reservationDate = reservation.getReservationTimes().get(0).getAvailableDate().getDate();
-            if(!monthlyReservations.containsKey(reservationDate)){
+            LocalDate reservationDate = reservation.getDate();
+            if(!monthlyReservations.containsKey(reservationDate) && !reservation.isCancelled()){
                 monthlyReservations.put(reservationDate, true);
             }
         });
@@ -147,7 +159,7 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findByMember(member);
         // 해당월에 잡힌 예약만 반환
         return reservations.stream()
-                .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getReservationTimes().get(0).getAvailableDate().getDate(), month))
+                .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getDate(), month))
                 .collect(Collectors.toList());
     }
 
@@ -161,7 +173,9 @@ public class ReservationService {
                 reservations.add(time.getReservation());
             }
         });
-        return new ArrayList<>(reservations);
+        return new ArrayList<>(reservations).stream()
+                .sorted(Comparator.comparing(Reservation::getStartTime))
+                .collect(Collectors.toList());
     }
 
     // 특정 상담사의 한 달간 각 날짜별로, 예약이 있는 날인지 여부 조회
@@ -192,7 +206,7 @@ public class ReservationService {
 
         // 해당월의 건만 반환
         return reservations.stream()
-                .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getReservationTimes().get(0).getAvailableDate().getDate(), month))
+                .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getDate(), month))
                 .collect(Collectors.toList());
     }
 
@@ -211,7 +225,7 @@ public class ReservationService {
         Reservation reservation = findReservation(reservationId);
         // 취소는 최소 24시간 전
         LocalTime startTime = reservation.getReservationTimePeriod().getStartTime();
-        LocalDate reservationDate = reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+        LocalDate reservationDate = reservation.getDate();
         LocalDateTime startDateTime = LocalDateTime.of(reservationDate, startTime);
         Duration duration = Duration.between(LocalDateTime.now(), startDateTime);
         if(duration.toHours() < 24) throw new BusinessLogicException(ExceptionCode.CANCELLATION_TOO_LATE);
@@ -232,7 +246,7 @@ public class ReservationService {
         Reservation reservation = findReservation(reservationId);
         // 취소는 최소 24시간 전
         LocalTime startTime = reservation.getReservationTimePeriod().getStartTime();
-        LocalDate reservationDate = reservation.getReservationTimes().get(0).getAvailableDate().getDate();
+        LocalDate reservationDate = reservation.getDate();
         LocalDateTime startDateTime = LocalDateTime.of(reservationDate, startTime);
         Duration duration = Duration.between(LocalDateTime.now(), startDateTime);
         if(duration.toHours() < 24) throw new BusinessLogicException(ExceptionCode.CANCELLATION_TOO_LATE);
