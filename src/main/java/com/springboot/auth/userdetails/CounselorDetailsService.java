@@ -27,7 +27,7 @@ public class CounselorDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Counselor> optionalCounselor = counselorRepository.findByUserId(username);
-        Counselor findCounselor = optionalCounselor.orElseThrow(() -> new BusinessLogicException(ExceptionCode.COUNSELOR_NOT_FOUND));
+        Counselor findCounselor = optionalCounselor.orElseThrow(() -> new UsernameNotFoundException("Counselor not found"));
         return new CounselorDetails(findCounselor);
     }
 
