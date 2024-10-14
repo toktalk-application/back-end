@@ -52,7 +52,6 @@ public class MemberDto {
         private LocalDate birth;
         private Gender gender;
         private TestResult lastTestResult;
-        private List<ReservationDto.Response> reservations;
     }
 
 

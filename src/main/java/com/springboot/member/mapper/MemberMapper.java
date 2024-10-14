@@ -32,15 +32,13 @@ public interface MemberMapper {
         List<TestResult> testResults = member.getTestResults();
         TestResult lastTestResult = testResults.isEmpty() ? null : testResults.get(testResults.size() - 1);
         // 예약 정보(맵퍼 주입)
-        List<ReservationDto.Response> reservationDtos = reservationMapper.reservationsToReservationResponseDtos(member.getReservations());
         return new MemberDto.Response(
                 member.getMemberId(),
                 member.getUserId(),
                 member.getNickname(),
                 member.getBirth(),
                 member.getGender(),
-                lastTestResult,
-                reservationDtos
+                lastTestResult
         );
     };
 

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -42,6 +43,9 @@ public class Reservation {
 
     @Column
     private int fee;
+
+    @Column
+    private LocalDate date;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -105,5 +109,9 @@ public class Reservation {
     public class TimePeriod{
         private LocalTime startTime;
         private LocalTime endTime;
+    }
+
+    public boolean isCancelled(){
+        return reservationStatus.equals(ReservationStatus.CANCELLED_BY_CLIENT) || reservationStatus.equals(ReservationStatus.CANCELLED_BY_COUNSELOR);
     }
 }
