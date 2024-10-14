@@ -126,6 +126,7 @@ public class ReservationService {
                     // exceptCancelledReservation이 false면 그냥 통과, true일 경우 취소되지 않은 예약만 통과
                     return dateMatched && (!exceptCancelledReservation || !reservation.isCancelled());
                 })
+                .sorted(Comparator.comparing(Reservation::getStartTime)) // 시간 기준으로 오름차순 정렬
                 .collect(Collectors.toList());
     }
 
@@ -172,7 +173,9 @@ public class ReservationService {
                 reservations.add(time.getReservation());
             }
         });
-        return new ArrayList<>(reservations);
+        return new ArrayList<>(reservations).stream()
+                .sorted(Comparator.comparing(Reservation::getStartTime))
+                .collect(Collectors.toList());
     }
 
     // 특정 상담사의 한 달간 각 날짜별로, 예약이 있는 날인지 여부 조회
