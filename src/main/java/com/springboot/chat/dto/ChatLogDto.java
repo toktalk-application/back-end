@@ -34,7 +34,7 @@ public class ChatLogDto {
         private long logId;
         private String sender;
         private String message;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-        private String createdAt;
+//        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+//        private String createdAt;
     }
 }
