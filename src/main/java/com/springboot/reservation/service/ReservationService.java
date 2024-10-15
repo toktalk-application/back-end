@@ -93,6 +93,8 @@ public class ReservationService {
         Counselor counselor = counselorService.findCounselor(counselorId);
         counselor.updateRating(review.getRating());
         counselorRepository.save(counselor);
+
+        notificationService.sendReviewRegisteredNotification(reservation, review);
     }
     // 상담사 진단 등록
     public void registerReport(long reservationId, Report report, Authentication authentication){

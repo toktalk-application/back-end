@@ -14,6 +14,7 @@ import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.member.repository.MemberRepository;
 import com.springboot.counselor.repository.CounselorRepository;
+import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.reservation.entity.Reservation;
 import com.springboot.member.entity.Member;
@@ -103,6 +104,37 @@ public class NotificationService {
         }
     }
 
+    public void sendReviewRegisteredNotification(Reservation reservation, Review review) {
+        try {
+            Counselor counselor = getCounselor(reservation.getCounselorId());
+            String fcmToken = counselor.getFcmToken();
+
+            if (fcmToken == null || fcmToken.isEmpty()) {
+                log.warn("FCM token not found: {}", counselor.getCounselorId());
+                return;
+            }
+
+            // 알림 생성
+            com.springboot.firebase.data.Notification notification = createNotification(
+                    counselor.getCounselorId(),
+                    0,
+                    reservation.getReservationId(),
+                    "새로운 리뷰가 등록되었습니다",
+                    "새로운 리뷰가 등록되었습니다. 평점: " + review.getRating(),
+                    com.springboot.firebase.data.Notification.NotificationType.RESERVATION
+            );
+
+            // 알림 저장
+            saveNotificationToRedis(counselor.getUserId(), notification);
+
+            // FCM 메세지 전송
+            sendFcmMessage(fcmToken, notification.getTitle(), notification.getBody());
+
+            log.info("Review registered notification sent to counselor: counselorId={}, reservationId={}", counselor.getCounselorId(), reservation.getReservationId());
+        } catch (Exception e) {
+            log.error("Failed to send review registered notification: reservationId={}", reservation.getReservationId(), e);
+        }
+    }
 
     public void sendChatRoomCreationNotification(long memberId, long roomId) {
         try {
