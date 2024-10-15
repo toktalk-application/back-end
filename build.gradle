@@ -54,7 +54,7 @@ dependencies {
 
 	implementation 'mysql:mysql-connector-java'
 	implementation 'com.corundumstudio.socketio:netty-socketio:1.7.19'
-	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.5
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.5'
 
 	// 코드에프 pass
 	implementation 'org.json:json:20210307'
