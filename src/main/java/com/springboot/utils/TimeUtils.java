@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.checkerframework.checker.units.qual.A;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
@@ -35,5 +36,9 @@ public class TimeUtils {
         private Set<LocalTime> additions;
         private Set<LocalTime> unchanged;
         private Set<LocalTime> removed;
+    }
+
+    public static boolean isPassedTime(LocalDateTime time){
+        return time.isEqual(LocalDateTime.now()) || time.isBefore(LocalDateTime.now());
     }
 }
