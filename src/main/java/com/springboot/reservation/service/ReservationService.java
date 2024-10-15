@@ -118,6 +118,8 @@ public class ReservationService {
         // 문제 없으면 진단 등록
         reservation.setReport(report); // Reservation <-> Report 양방향 set 메서드
         reservationRepository.save(reservation);
+
+        notificationService.sendReportRegisteredNotification(reservation, report);
     }
 
     // 특정 회원이 특정 날짜에 잡은 예약 목록 조회
