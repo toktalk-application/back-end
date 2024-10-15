@@ -7,6 +7,7 @@ import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.firebase.service.NotificationService;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
 import com.springboot.reservation.dto.ReservationDto;
@@ -33,6 +34,7 @@ public class ReservationService {
     private final CounselorService counselorService;
     private final MemberService memberService;
     private final CounselorRepository counselorRepository;
+    private final NotificationService notificationService;
 
     // 상담 예약 등록
     public Reservation createReservation(Reservation reservation, LocalDate date, List<LocalTime> startTimes){
@@ -244,6 +246,9 @@ public class ReservationService {
 
         // 바뀐 상태 저장하고 리턴
         reservationRepository.save(reservation);
+
+        // 알림 서비스 호출 (알림 전송)
+        notificationService.sendReservationCanceledNotificationToCounselor(reservation);
     }
 
     // 예약 취소 (COUNSELOR)
@@ -279,7 +284,11 @@ public class ReservationService {
         }*/
         // 바뀐 상태 저장하고 리턴
         reservationRepository.save(reservation);
+
+        // 알림 서비스 호출 (알림 전송)
+        notificationService.sendReservationCanceledNotificationToMember(reservation);
     }
+
 
     // 상담의 상태를 완료로 변경
     /*@Scheduled(cron = "0 50 * * * ?") // 매 시 50분마다 실행
