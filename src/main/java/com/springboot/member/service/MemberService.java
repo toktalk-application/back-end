@@ -109,6 +109,8 @@ public class MemberService {
 
         // 회원 찾아오기
         Member member = findVerifiedMember(memberId);
+        // 오늘의 기분이 이미 있으면 지우고 등록
+        if(member.getDailyMoods().get(LocalDate.now()) != null) member.getDailyMoods().remove(LocalDate.now());
         mood.setMember(member); // Member <-> DailyMood 양방향 set 메서드
     }
 
