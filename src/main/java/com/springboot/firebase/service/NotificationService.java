@@ -14,6 +14,7 @@ import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
 import com.springboot.member.repository.MemberRepository;
 import com.springboot.counselor.repository.CounselorRepository;
+import com.springboot.reservation.entity.Report;
 import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.reservation.entity.Reservation;
@@ -39,6 +40,7 @@ public class NotificationService {
     private final CounselorService counselorService;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    // 싱딤사가 상담예약을 취소시 사용자에게 알림 전송 로직
     public void sendReservationCanceledNotificationToCounselor(Reservation reservation) {
         try {
             Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
@@ -71,6 +73,7 @@ public class NotificationService {
         }
     }
 
+    // 사용자가 상담예약을 취소시 상담사에게 알림 전송 로직
     public void sendReservationCanceledNotificationToMember(Reservation reservation) {
         try {
             // 사용자 정보 가져오기
@@ -104,6 +107,7 @@ public class NotificationService {
         }
     }
 
+    // 사용자가 리뷰를 작성시 상담사에게 알림 전송 로직
     public void sendReviewRegisteredNotification(Reservation reservation, Review review) {
         try {
             Counselor counselor = getCounselor(reservation.getCounselorId());
@@ -124,7 +128,7 @@ public class NotificationService {
                     com.springboot.firebase.data.Notification.NotificationType.RESERVATION
             );
 
-            // 알림 저장
+            // 알림 저장 (Redis)
             saveNotificationToRedis(counselor.getUserId(), notification);
 
             // FCM 메세지 전송
@@ -136,6 +140,41 @@ public class NotificationService {
         }
     }
 
+    // 상담사가 사용자에대한 리포트를 작성시 사용자에게 알림 전송 로직
+    public void sendReportRegisteredNotification(Reservation reservation, Report report) {
+        try {
+            // 사용자 정보 가져오기
+            Member member = getMember(reservation.getMember().getMemberId());
+            String fcmToken = member.getFcmToken();
+
+            if (fcmToken == null || fcmToken.isEmpty()) {
+                log.warn("FCM token not found: {}", member.getMemberId());
+                return;
+            }
+
+            // 알림 생성
+            com.springboot.firebase.data.Notification notification = createNotification(
+                    member.getMemberId(),
+                    0,
+                    reservation.getReservationId(),
+                    "새로운 진단 리포트가 등록되었습니다",
+                    "상담사가 새로운 진단 리포트를 등록했습니다. 확인해 주세요.",
+                    com.springboot.firebase.data.Notification.NotificationType.RESERVATION
+            );
+
+            // 알림 저장 (Redis)
+            saveNotificationToRedis(member.getUserId(), notification);
+
+            // FCM 메시지 전송
+            sendFcmMessage(fcmToken, notification.getTitle(), notification.getBody());
+
+            log.info("Report registered notification sent to member: memberId={}, reservationId={}", member.getMemberId(), reservation.getReservationId());
+        } catch (Exception e) {
+            log.error("Failed to send report registered notification to member: reservationId={}", reservation.getReservationId(), e);
+        }
+    }
+
+    // 채팅방 생성시 사용자에게 얼림 전송 로직
     public void sendChatRoomCreationNotification(long memberId, long roomId) {
         try {
             log.info("Sending chat room creation notification: memberId={}, roomId={}", memberId, roomId);
