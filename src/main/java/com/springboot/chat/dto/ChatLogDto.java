@@ -1,11 +1,9 @@
 package com.springboot.chat.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -34,7 +32,15 @@ public class ChatLogDto {
         private long logId;
         private String sender;
         private String message;
-//        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-//        private String createdAt;
+        private LocalDateTime createdAt;
+    }
+    @Builder
+    @Getter
+    @Setter
+    public static class ChatResponse {
+        private long logId;
+        private String sender;
+        private String message;
+        private String timeOnly;
     }
 }
