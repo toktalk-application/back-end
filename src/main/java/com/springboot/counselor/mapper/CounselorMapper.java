@@ -42,7 +42,7 @@ public interface CounselorMapper {
         // 평균 별점 계산
         double rating = (double) counselor.getTotalRating() / counselor.getReviews();
         double formattedRating = Math.round(rating * 10) / 10.0;
-        String ratingStr = formattedRating == 0.0 ? "없음" : String.valueOf(formattedRating);
+        String ratingStr = counselor.getReviews() == 0 ? "별점 없음" : String.valueOf(formattedRating);
 
         return new CounselorDto.Response(
                 counselor.getCounselorId(),
