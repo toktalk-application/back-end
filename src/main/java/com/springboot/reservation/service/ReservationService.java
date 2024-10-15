@@ -282,7 +282,7 @@ public class ReservationService {
     }
 
     // 상담의 상태를 완료로 변경
-    /*@Scheduled(cron = "0 50 * * * ?") // 매 시 50분마다 실행
+    @Scheduled(cron = "0 50 * * * ?") // 매 시 50분마다 실행
     private void completeCounselling(){
         // 상태가 PENDING인 상담들 조회
         List<Reservation> pendingReservations = reservationRepository.findByReservationStatus(Reservation.ReservationStatus.PENDING);
@@ -293,17 +293,17 @@ public class ReservationService {
             if(TimeUtils.isPassedTime(endTime)) reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
             reservationRepository.save(reservation);
         });
-    }*/
+    }
 
     // 테스트용 스케줄러
-    @Scheduled(cron = "0 */1 * * * *")
-    private void testScheduler(){
-        List<Reservation> pendingReservations = reservationRepository.findByReservationStatus(Reservation.ReservationStatus.PENDING);
-        pendingReservations.forEach(reservation -> {
-            // 그냥 완료로 변경
-            reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
-            reservationRepository.save(reservation);
-            ;
-        });
-    }
+//    @Scheduled(cron = "0 */1 * * * *")
+//    private void testScheduler(){
+//        List<Reservation> pendingReservations = reservationRepository.findByReservationStatus(Reservation.ReservationStatus.PENDING);
+//        pendingReservations.forEach(reservation -> {
+//            // 그냥 완료로 변경
+//            reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
+//            reservationRepository.save(reservation);
+//            ;
+//        });
+//    }
 }

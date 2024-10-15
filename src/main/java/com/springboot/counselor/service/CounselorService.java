@@ -4,9 +4,7 @@ import com.springboot.auth.utils.CustomAuthorityUtils;
 import com.springboot.counselor.available_date.AvailableDate;
 import com.springboot.counselor.available_date.AvailableTime;
 import com.springboot.counselor.dto.AvailableDateDto;
-import com.springboot.counselor.dto.CareerDto;
 import com.springboot.counselor.dto.CounselorDto;
-import com.springboot.counselor.dto.LicenseDto;
 import com.springboot.counselor.entity.*;
 import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.exception.BusinessLogicException;
@@ -14,10 +12,12 @@ import com.springboot.exception.ExceptionCode;
 import com.springboot.member.entity.Member;
 import com.springboot.member.repository.MemberRepository;
 import com.springboot.reservation.entity.Reservation;
+import com.springboot.reservation.repository.ReservationRepository;
+import com.springboot.reservation.service.ReservationService;
 import com.springboot.utils.CalendarUtil;
 import com.springboot.utils.IntValidationUtil;
 import com.springboot.utils.TimeUtils;
-import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,12 +32,28 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-@AllArgsConstructor
 public class CounselorService {
     private final CounselorRepository counselorRepository;
     private final CustomAuthorityUtils customAuthorityUtils;
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final ReservationRepository reservationRepository;
+    private final ReservationService reservationService;
+
+    public CounselorService(CounselorRepository counselorRepository,
+                            CustomAuthorityUtils customAuthorityUtils,
+                            PasswordEncoder passwordEncoder,
+                            MemberRepository memberRepository,
+                            ReservationRepository reservationRepository,
+                            @Lazy ReservationService reservationService) {
+        this.counselorRepository = counselorRepository;
+        this.customAuthorityUtils = customAuthorityUtils;
+        this.passwordEncoder = passwordEncoder;
+        this.memberRepository = memberRepository;
+        this.reservationRepository = reservationRepository;
+        this.reservationService = reservationService;
+    }
+
     public Counselor createCounselor(Counselor counselor, CounselorDto.Post postDto){
         // 자격증, 경력사항은 최소 하나 ~ 최대 3개
         int licenceSize = postDto.getLicenses() == null ? 0 : postDto.getLicenses().size();
@@ -386,5 +402,33 @@ public class CounselorService {
         return counselorRepository.findByUserId(username)
                 .map(Counselor::getCounselorId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
+
+    // 남은 상담 건수 조회
+    public int getReservationCount(long counselorId){
+        List<Reservation> reservations = reservationRepository.findByCounselorId(counselorId);
+
+        // 상태가 PENDING인 상담 건들의 갯수를 반환
+        return (int) reservations.stream()
+                .filter(reservation -> reservation.getReservationStatus().equals(Reservation.ReservationStatus.PENDING))
+                .count();
+    }
+
+    // 상담사 탈퇴
+    public void quitCounselor(long counselorId){
+        // 상담사 가져오기
+        Counselor counselor = findVerifiedCounselor(counselorId);
+
+        // 먼저 남은 상담들 가져오기
+        List<Reservation> reservations = reservationRepository.findByCounselorId(counselorId).stream()
+                .filter(reservation -> reservation.getReservationStatus().equals(Reservation.ReservationStatus.PENDING))
+                .collect(Collectors.toList());
+        // 상담 예약 취소
+        reservations.forEach(reservation -> {
+            reservationService.cancelReservationByCounselor(counselorId, "상담사 회원 탈퇴로 자동 취소되었습니다.");
+        });
+        // 회원 탈퇴
+        counselor.setCounselorStatus(Counselor.Status.INACTIVE);
+        counselorRepository.save(counselor);
     }
 }

@@ -10,9 +10,11 @@ import com.springboot.member.dto.MemberDto;
 import com.springboot.member.entity.DailyMood;
 import com.springboot.member.entity.Member;
 import com.springboot.member.repository.MemberRepository;
+import com.springboot.reservation.entity.Reservation;
 import com.springboot.reservation.service.ReservationService;
 import com.springboot.utils.CalendarUtil;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,12 +28,24 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-@AllArgsConstructor
 public class MemberService {
-    private MemberRepository memberRepository;
-    private CounselorRepository counselorRepository;
-    private PasswordEncoder passwordEncoder;
-    private CustomAuthorityUtils customAuthorityUtils;
+    private final MemberRepository memberRepository;
+    private final CounselorRepository counselorRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final CustomAuthorityUtils customAuthorityUtils;
+    private final ReservationService reservationService;
+
+    public MemberService(MemberRepository memberRepository,
+                         CounselorRepository counselorRepository,
+                         PasswordEncoder passwordEncoder,
+                         CustomAuthorityUtils customAuthorityUtils,
+                         @Lazy ReservationService reservationService) {
+        this.memberRepository = memberRepository;
+        this.counselorRepository = counselorRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.customAuthorityUtils = customAuthorityUtils;
+        this.reservationService = reservationService;
+    }
 
     public Member createMember(Member member){
         if(!isUserIdAvailable(member.getUserId())){
@@ -82,11 +96,32 @@ public class MemberService {
         return memberRepository.save(realMember);
     }
 
+    // 남은 상담 건수 조회
+    public int getReservationCounts(long memberId){
+        Member member = findVerifiedMember(memberId);
+        List<Reservation> reservations = member.getReservations();
+
+        // PENDING 상태인 상담 예약들의 갯수 반환
+        return (int) reservations.stream()
+                .filter(reservation -> reservation.getReservationStatus().equals(Reservation.ReservationStatus.PENDING))
+                .count();
+    }
+
     // 회원탈퇴
     public void quitMember(long memberId){
+        // 회원 가져오기
         Member member = findVerifiedMember(memberId);
-        member.setMemberStatus(Member.Status.INACTIVE);
 
+        // 남은 상담 예약 가져오기
+        List<Reservation> reservations = member.getReservations().stream()
+                .filter(reservation -> reservation.getReservationStatus().equals(Reservation.ReservationStatus.PENDING))
+                .collect(Collectors.toList());
+        // 상담 예약 취소
+        reservations.forEach(reservation -> {
+            reservationService.cancelReservationByMember(memberId);
+        });
+        // 회원탈퇴
+        member.setMemberStatus(Member.Status.INACTIVE);
         memberRepository.save(member);
     }
 
