@@ -68,7 +68,7 @@ public class ChatController {
             chatLog.setChatRoom(chatRoom);
             ChatLog savedChatLog = chatLogService.createChatLog(chatLog);
 
-            ChatLogDto.Response response = chatLogMapper.chatLogToChatLogResponseDto(savedChatLog);
+            ChatLogDto.ChatResponse response = chatLogMapper.chatLogToChatLogChatResponseDto(savedChatLog);
 
             // 방의 모든 클라이언트에게 메시지 브로드캐스트
             server.getRoomOperations(String.valueOf(chatMessage.getRoomId())).sendEvent("message", response);

@@ -27,7 +27,7 @@ public class TestResult {
     private int score;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 50)
     private TestLevel testLevel = TestLevel.NORMAL;
 
     @Column(nullable = false, length = 255)

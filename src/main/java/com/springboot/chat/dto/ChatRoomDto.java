@@ -29,6 +29,6 @@ public class ChatRoomDto {
         private long counselorId;
         private String roomStatus;
         private LocalDateTime createdAt;
-        private List<ChatLogDto.Response> chatLogs;
+        private List<ChatLogDto.ChatResponse> chatLogs;
     }
 }

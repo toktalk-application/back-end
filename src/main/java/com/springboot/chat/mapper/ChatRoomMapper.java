@@ -41,7 +41,7 @@ public interface ChatRoomMapper {
         response.counselorId(chatRoom.getCounselor().getCounselorId());
         response.roomStatus(chatRoom.getRoomStatus().getStatus());
         response.createdAt(chatRoom.getCreatedAt());
-        response.chatLogs(chatLogMapper.chatLogsToChatLogResponseDtos(chatRoom.getChatLogs()));
+        response.chatLogs(chatLogMapper.chatLogsToChatLogChatResponseDtos(chatRoom.getChatLogs()));
 
         return response.build();
     }
