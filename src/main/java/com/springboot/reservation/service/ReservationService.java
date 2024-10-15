@@ -301,8 +301,10 @@ public class ReservationService {
         pendingReservations.forEach(reservation -> {
             LocalDateTime endTime = LocalDateTime.of(reservation.getDate(), reservation.getEndTime());
             // 종료 시간이 되었다면 상태를 완료로 변경
-            if(TimeUtils.isPassedTime(endTime)) reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
-            reservationRepository.save(reservation);
+            if(TimeUtils.isPassedTime(endTime)) {
+                reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
+                reservationRepository.save(reservation);
+            }
         });
     }
 
