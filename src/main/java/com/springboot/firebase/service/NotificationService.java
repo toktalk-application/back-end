@@ -4,10 +4,10 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
-import com.springboot.auth.redis.RedisRepositoryConfig;
-import com.springboot.firebase.data.*;
 
-import java.util.ArrayList;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.stream.Collectors;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.management.remote.NotificationResult;
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,12 +31,78 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FirebaseNotificationService {
+public class NotificationService {
     private final MemberRepository memberRepository;
     private final CounselorRepository counselorRepository;
     private final ReservationRepository reservationRepository;
     private final CounselorService counselorService;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public void sendReservationCanceledNotificationToCounselor(Reservation reservation) {
+        try {
+            Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
+            String fcmToken = counselor.getFcmToken();
+
+            if (fcmToken == null || fcmToken.isEmpty()) {
+                log.warn("FCM token not found for counselor: {}", counselor.getCounselorId());
+                return;
+            }
+
+            // 알림 생성
+            com.springboot.firebase.data.Notification notification = createNotification(
+                    counselor.getCounselorId(),
+                    0,
+                    reservation.getReservationId(),
+                    "상담이 취소되었습니다",
+                    "상담이 취소되었습니다. 자세한 내용을 확인하세요.",
+                    com.springboot.firebase.data.Notification.NotificationType.RESERVATION
+            );
+
+            // 알림 저장 (Redis 또는 DB)
+            saveNotificationToRedis(counselor.getUserId(), notification);
+
+            // FCM 메시지 전송
+            sendFcmMessage(fcmToken, notification.getTitle(), notification.getBody());
+
+            log.info("Reservation canceled notification sent to counselor: counselorId={}, reservationId={}", counselor.getCounselorId(), reservation.getReservationId());
+        } catch (Exception e) {
+            log.error("Failed to send reservation canceled notification: reservationId={}", reservation.getReservationId(), e);
+        }
+    }
+
+    public void sendReservationCanceledNotificationToMember(Reservation reservation) {
+        try {
+            // 사용자 정보 가져오기
+            Member member = getMember(reservation.getMember().getMemberId());
+            String fcmToken = member.getFcmToken();
+
+            if (fcmToken == null || fcmToken.isEmpty()) {
+                log.warn("FCM token not found for member: {}", member.getMemberId());
+                return;
+            }
+
+            // 알림 생성
+            com.springboot.firebase.data.Notification notification = createNotification(
+                    member.getMemberId(),
+                    0,
+                    reservation.getReservationId(),
+                    "상담이 취소되었습니다",
+                    "상담사가 상담을 취소하였습니다. 확인해 주세요.",
+                    com.springboot.firebase.data.Notification.NotificationType.RESERVATION
+            );
+
+            // 알림 저장 (Redis 또는 DB)
+            saveNotificationToRedis(member.getUserId(), notification);
+
+            // FCM 메시지 전송
+            sendFcmMessage(fcmToken, notification.getTitle(), notification.getBody());
+
+            log.info("Reservation canceled notification sent to member: memberId={}, reservationId={}", member.getMemberId(), reservation.getReservationId());
+        } catch (Exception e) {
+            log.error("Failed to send reservation canceled notification to member: reservationId={}", reservation.getReservationId(), e);
+        }
+    }
+
 
     public void sendChatRoomCreationNotification(long memberId, long roomId) {
         try {
@@ -211,35 +276,17 @@ public class FirebaseNotificationService {
     }
 
     // 상담 시작전 알림
-    public void sendReservationReminder(Long reservationId) {
+    public void sendReservationReminder(Long reservationId) throws FirebaseMessagingException {
         Reservation reservation = getReservation(reservationId);
         Member member = reservation.getMember();
         Counselor counselor = getCounselor(reservation.getCounselorId());
 
-        sendNotification(member.getFcmToken(), "상담 시작 알림", "10분 후 상담이 시작됩니다.");
-        sendNotification(counselor.getFcmToken(), "상담 시작 알림", "10분 후 상담이 시작됩니다.");
-    }
-
-    // 상담취소 알림
-    public void sendCancellationNotification(Long reservationId, boolean cancelledByMember) {
-        Reservation reservation = getReservation(reservationId);
-        String recipientToken;
-        if (cancelledByMember) {
-            Counselor counselor = getCounselor(reservation.getCounselorId());
-            recipientToken = counselor.getFcmToken();
-        } else {
-            recipientToken = reservation.getMember().getFcmToken();
-        }
-
-        String message = cancelledByMember ?
-                "사용자가 상담을 취소했습니다." :
-                "상담사가 상담을 취소했습니다. 죄송합니다.";
-
-        sendNotification(recipientToken, "상담 취소 알림", message);
+        sendFcmMessage(member.getFcmToken(), "상담 시작 알림", "10분 후 상담이 시작됩니다.");
+        sendFcmMessage(counselor.getFcmToken(), "상담 시작 알림", "10분 후 상담이 시작됩니다.");
     }
 
     // 새로운 메세지 알림
-    public void sendNewMessageNotification(Long recipientId, boolean isCounselor) {
+    public void sendNewMessageNotification(Long recipientId, boolean isCounselor) throws FirebaseMessagingException {
         String recipientToken;
         if (isCounselor) {
             Counselor counselor = getCounselor(recipientId);
@@ -249,22 +296,12 @@ public class FirebaseNotificationService {
             recipientToken = member.getFcmToken();
         }
 
-        sendNotification(recipientToken, "새 메시지 도착", "새로운 메시지가 도착했습니다.");
+        sendFcmMessage(recipientToken, "새 메시지 도착", "새로운 메시지가 도착했습니다.");
     }
 
     // 사용자한테 상담 후기 작성요청 알림
-    public void sendReviewRequestNotification(Long memberId, Long reservationId) {
+    public void sendReviewRequestNotification(Long memberId, Long reservationId) throws FirebaseMessagingException {
         Member member = getMember(memberId);
-        sendNotification(member.getFcmToken(), "상담 후기 작성 요청", "최근 진행한 상담에 대한 후기를 작성해 주세요.");
-    }
-
-    // 알림
-    public void sendNotification(String token, String title, String body) {
-        try {
-            sendFcmMessage(token, title, body);
-        } catch (FirebaseMessagingException e) {
-            System.err.println("Failed to send notification: " + e.getMessage());
-            e.printStackTrace();
-        }
+        sendFcmMessage(member.getFcmToken(), "상담 후기 작성 요청", "최근 진행한 상담에 대한 후기를 작성해 주세요.");
     }
 }
