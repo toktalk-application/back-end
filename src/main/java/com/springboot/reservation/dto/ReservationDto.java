@@ -34,6 +34,7 @@ public class ReservationDto {
     @NoArgsConstructor
     public static class Response{
         private long reservationId;
+        private long memberId;
         private long counselorId;
         private String memberNickname;
         private int memberBirthYear;

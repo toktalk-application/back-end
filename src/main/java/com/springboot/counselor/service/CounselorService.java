@@ -425,7 +425,7 @@ public class CounselorService {
                 .collect(Collectors.toList());
         // 상담 예약 취소
         reservations.forEach(reservation -> {
-            reservationService.cancelReservationByCounselor(counselorId, "상담사 회원 탈퇴로 자동 취소되었습니다.");
+            reservationService.cancelReservationByCounselor(reservation.getReservationId(), "상담사 회원 탈퇴로 자동 취소되었습니다.");
         });
         // 회원 탈퇴
         counselor.setCounselorStatus(Counselor.Status.INACTIVE);
