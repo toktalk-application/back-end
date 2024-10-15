@@ -160,6 +160,8 @@ public class ReservationService {
         // 해당월에 잡힌 예약만 반환
         return reservations.stream()
                 .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getDate(), month))
+                .sorted(Comparator.comparing(Reservation::getDate))// 날짜순 정렬
+                .sorted(Comparator.comparing(Reservation::getStartTime))// 그 다음 시간순 정렬
                 .collect(Collectors.toList());
     }
 
@@ -207,6 +209,8 @@ public class ReservationService {
         // 해당월의 건만 반환
         return reservations.stream()
                 .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getDate(), month))
+                .sorted(Comparator.comparing(Reservation::getDate) // 날짜순으로 정렬
+                        .thenComparing(Reservation::getStartTime)) // 그다음 시간순 정렬
                 .collect(Collectors.toList());
     }
 
