@@ -13,4 +13,6 @@ import java.util.Optional;
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     List<Reservation> findByMember(Member member);
     List<Reservation> findByCounselorId(long counselorId);
+
+    List<Reservation> findByReservationStatus(Reservation.ReservationStatus reservationStatus);
 }

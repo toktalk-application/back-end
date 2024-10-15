@@ -16,7 +16,9 @@ import com.springboot.reservation.entity.Review;
 import com.springboot.reservation.repository.ReservationRepository;
 import com.springboot.utils.CalendarUtil;
 import com.springboot.utils.CredentialUtil;
+import com.springboot.utils.TimeUtils;
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -277,5 +279,20 @@ public class ReservationService {
         }*/
         // 바뀐 상태 저장하고 리턴
         reservationRepository.save(reservation);
+    }
+
+    // 상담의 상태를 완료로 변경
+    @Scheduled(cron = "0 50 * * * ?") // 매 시 50분마다 실행
+    private void completeCounselling(){
+        // 상태가 PENDING인 상담들 조회
+        List<Reservation> pendingReservations = reservationRepository.findByReservationStatus(Reservation.ReservationStatus.PENDING);
+        // 상담들 순회하며 조건 확인
+        pendingReservations.forEach(reservation -> {
+            LocalDateTime endTime = LocalDateTime.of(reservation.getDate(), reservation.getEndTime());
+            // 종료 시간이 되었다면 상태를 완료로 변경
+            if(TimeUtils.isPassedTime(endTime)) reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
+            reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
+            reservationRepository.save(reservation);
+        });
     }
 }
