@@ -118,7 +118,7 @@ public class MemberService {
                 .collect(Collectors.toList());
         // 상담 예약 취소
         reservations.forEach(reservation -> {
-            reservationService.cancelReservationByMember(memberId);
+            reservationService.cancelReservationByMember(reservation.getReservationId());
         });
         // 회원탈퇴
         member.setMemberStatus(Member.Status.INACTIVE);
