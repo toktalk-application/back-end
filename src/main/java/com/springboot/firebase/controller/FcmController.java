@@ -1,5 +1,6 @@
 package com.springboot.firebase.controller;
 
+import com.springboot.chat.service.ChatRoomService;
 import com.springboot.firebase.data.Notification;
 import com.springboot.firebase.dto.FcmSendDto;
 import com.springboot.firebase.service.FirebaseNotificationService;
@@ -19,9 +20,11 @@ import java.util.List;
 @RequestMapping("/fcm")
 public class FcmController {
     private final FirebaseNotificationService fcmService;
+    private final ChatRoomService chatRoomService;
 
-    public FcmController(FirebaseNotificationService fcmService) {
+    public FcmController(FirebaseNotificationService fcmService, ChatRoomService chatRoomService) {
         this.fcmService = fcmService;
+        this.chatRoomService = chatRoomService;
     }
 
     @PostMapping("/reservation-notification")
@@ -86,7 +89,18 @@ public class FcmController {
     }
 
     @DeleteMapping("/{notificationId}")
-    public ResponseEntity<?> deleteNotification(Authentication authentication, @PathVariable String notificationId) {
+    public ResponseEntity<?> deleteNotification(Authentication authentication, @PathVariable("notificationId") String notificationId) {
+        String userId = getUserIdFromAuthentication(authentication);
+        boolean deleted = fcmService.deleteNotification(userId, notificationId);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/chat/{notificationId}")
+    public ResponseEntity<?> deleteChatNotification(Authentication authentication, @PathVariable("notificationId") String notificationId) {
         String userId = getUserIdFromAuthentication(authentication);
         boolean deleted = fcmService.deleteNotification(userId, notificationId);
         if (deleted) {

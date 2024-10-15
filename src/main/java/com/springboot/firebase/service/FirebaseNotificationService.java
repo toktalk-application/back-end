@@ -6,6 +6,8 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.springboot.auth.redis.RedisRepositoryConfig;
 import com.springboot.firebase.data.*;
+
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
@@ -17,97 +19,85 @@ import com.springboot.reservation.entity.Reservation;
 import com.springboot.member.entity.Member;
 import com.springboot.counselor.entity.Counselor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.management.remote.NotificationResult;
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FirebaseNotificationService {
     private final MemberRepository memberRepository;
     private final CounselorRepository counselorRepository;
     private final ReservationRepository reservationRepository;
-    private final FirebaseMessaging firebaseMessaging;
     private final CounselorService counselorService;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void sendMessage(String token, String title, String body) throws FirebaseMessagingException {
-        Message message = Message.builder()
-                .setNotification(Notification.builder()
-                        .setTitle(title)
-                        .setBody(body)
-                        .build())
-                .setToken(token)  // 여기에 토큰을 설정합니다.
-                .build();
+    public void sendChatRoomCreationNotification(long memberId, long roomId) {
+        try {
+            log.info("Sending chat room creation notification: memberId={}, roomId={}", memberId, roomId);
 
-        String response = firebaseMessaging.send(message);
-        System.out.println("Successfully sent message: " + response);
+            Member member = getMember(memberId);
+            String fcmToken = member.getFcmToken();
+
+            if (fcmToken == null || fcmToken.isEmpty()) {
+                log.warn("FCM token not found: userId={}", memberId);
+                return;
+            }
+
+            if (roomId <= 0) {
+                throw new IllegalArgumentException("Invalid roomId: " + roomId);
+            }
+
+            com.springboot.firebase.data.Notification notification = createNotification(
+                    memberId, roomId, 0,"새로운 채팅방", "새로운 채팅방이 생성되었습니다.",
+                    com.springboot.firebase.data.Notification.NotificationType.CHAT
+            );
+
+            saveNotificationToRedis(member.getUserId(), notification);
+            sendFcmMessage(fcmToken, notification.getTitle(), notification.getBody());
+
+            log.info("Chat room creation notification sent successfully: memberId={}, roomId={}", memberId, roomId);
+        } catch (Exception e) {
+            log.error("Failed to send chat room creation notification: memberId={}, roomId={}", memberId, roomId, e);
+        }
     }
 
-    // 이 메서드는 너무 많은걸 하고 있음. 추상화해서 분리필요.
-    // 예약Id를 찾아서 상담주체인 상담사의 Id를 찾아와 예약이 생기면 알림전송.
     public boolean sendReservationNotification(Long reservationId) {
         try {
-            System.out.println("알림 전송 시작: 예약 ID = " + reservationId);
+            log.info("Sending reservation notification: reservationId={}", reservationId);
 
             Reservation reservation = reservationRepository.findById(reservationId)
                     .orElseThrow(() -> new BusinessLogicException(ExceptionCode.RESERVATION_NOT_FOUND));
-            System.out.println("예약 정보 조회 성공");
 
             Counselor counselor = counselorService.findCounselor(reservation.getCounselorId());
-            System.out.println("상담사 정보 조회 성공: 상담사 ID = " + counselor.getCounselorId());
-
             String fcmToken = counselor.getFcmToken();
+
             if (fcmToken == null || fcmToken.isEmpty()) {
-                System.out.println("FCM 토큰 없음: 상담사 ID = " + counselor.getCounselorId());
+                log.warn("FCM token not found: counselorId={}", counselor.getCounselorId());
                 return false;
             }
-            System.out.println("FCM 토큰 확인 완료");
 
-            // 알림 객체 생성
-            com.springboot.firebase.data.Notification notification = new com.springboot.firebase.data.Notification(
-                    UUID.randomUUID().toString(),
-                    counselor.getCounselorId(),
-                    reservation.getReservationId(),
-                    "새로운 상담 예약",
-                    "새로운 상담이 예약되었습니다. 확인해 주세요.",
-                    LocalDateTime.now(),
-                    false
+            com.springboot.firebase.data.Notification notification = createNotification(
+                    counselor.getCounselorId(), 0, reservation.getReservationId(),
+                    "새로운 상담 예약", "새로운 상담이 예약되었습니다. 확인해 주세요.",
+                    com.springboot.firebase.data.Notification.NotificationType.RESERVATION
             );
-            System.out.println("알림 객체 생성 완료");
 
-            // Redis에 알림 저장
-            String key = "notifications:" + counselor.getUserId(); // 내가 처음에 식별자 id로 가져옴
-            try {
-                redisTemplate.opsForList().leftPush(key, notification);
-                System.out.println("Redis에 알림 저장 성공: key = " + key);
-            } catch (Exception e) {
-                System.out.println("Redis에 알림 저장 실패: " + e.getMessage());
-                // Redis 저장 실패 시에도 FCM 메시지 전송 계속 진행
-            }
-
-            Message message = Message.builder()
-                    .setToken(fcmToken)
-                    .setNotification(Notification.builder()
-                            .setTitle(notification.getTitle())
-                            .setBody(notification.getBody())
-                            .build())
-                    .build();
-            System.out.println("FCM 메시지 객체 생성 완료");
-
-            String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("FCM 메시지 전송 완료: response = " + response);
+            saveNotificationToRedis(counselor.getUserId(), notification);
+            String response = sendFcmMessage(fcmToken, notification.getTitle(), notification.getBody());
 
             boolean result = response != null && !response.isEmpty();
-            System.out.println("알림 전송 결과: " + (result ? "성공" : "실패"));
+            log.info("Reservation notification sent: success={}, reservationId={}", result, reservationId);
             return result;
         } catch (Exception e) {
-            System.out.println("알림 전송 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Failed to send reservation notification: reservationId={}", reservationId, e);
             return false;
         }
     }
@@ -122,17 +112,16 @@ public class FirebaseNotificationService {
                         com.springboot.firebase.data.Notification notification = (com.springboot.firebase.data.Notification) obj;
                         if (notification.getNotificationId().equals(notificationId)) {
                             long removed = redisTemplate.opsForList().remove(key, 1, notification);
-                            System.out.println("알림 삭제 완료: notificationId = " + notificationId + ", 삭제된 항목 수 = " + removed);
+                            log.info("Notification deleted: userId={}, notificationId={}, removedCount={}", userId, notificationId, removed);
                             return removed > 0;
                         }
                     }
                 }
             }
-            System.out.println("알림을 찾을 수 없음: userId = " + userId + ", notificationId = " + notificationId);
+            log.warn("Notification not found: userId={}, notificationId={}", userId, notificationId);
             return false;
         } catch (Exception e) {
-            System.out.println("알림 삭제 중 오류 발생: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error deleting notification: userId={}, notificationId={}", userId, notificationId, e);
             return false;
         }
     }
@@ -141,6 +130,7 @@ public class FirebaseNotificationService {
         String key = "notifications:" + userId;
         List<Object> notifications = redisTemplate.opsForList().range(key, 0, -1);
         return notifications.stream()
+                .filter(obj -> obj instanceof com.springboot.firebase.data.Notification)
                 .map(obj -> (com.springboot.firebase.data.Notification) obj)
                 .collect(Collectors.toList());
     }
@@ -149,14 +139,57 @@ public class FirebaseNotificationService {
         String key = "notifications:" + userId;
         List<Object> notifications = redisTemplate.opsForList().range(key, 0, -1);
         for (int i = 0; i < notifications.size(); i++) {
-            com.springboot.firebase.data.Notification notification
-                    = (com.springboot.firebase.data.Notification) notifications.get(i);
-            if (notification.getNotificationId().equals(notificationId)) {
-                notification.setRead(true);
-                redisTemplate.opsForList().set(key, i, notification);
-                break;
+            if (notifications.get(i) instanceof com.springboot.firebase.data.Notification) {
+                com.springboot.firebase.data.Notification notification = (com.springboot.firebase.data.Notification) notifications.get(i);
+                if (notification.getNotificationId().equals(notificationId)) {
+                    notification.setRead(true);
+                    redisTemplate.opsForList().set(key, i, notification);
+                    log.info("Notification marked as read: userId={}, notificationId={}", userId, notificationId);
+                    return;
+                }
             }
         }
+        log.warn("Notification not found for marking as read: userId={}, notificationId={}", userId, notificationId);
+    }
+
+    private Member getMember(long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + memberId));
+    }
+
+    private com.springboot.firebase.data.Notification createNotification(long userId,long roomId, long reservationId, String title, String body, com.springboot.firebase.data.Notification.NotificationType type) {
+        return new com.springboot.firebase.data.Notification(
+                UUID.randomUUID().toString(),
+                userId,       // counselorId or userId
+                roomId,            // roomId는 필요 없을 때 0으로 설정
+                reservationId,
+                title,
+                body,
+                LocalDateTime.now(),
+                false,
+                type
+        );
+    }
+
+    private void saveNotificationToRedis(String userId, com.springboot.firebase.data.Notification notification) {
+        String key = "notifications:" + userId;
+        try {
+            redisTemplate.opsForList().leftPush(key, notification);
+            log.info("Notification saved to Redis: userId={}, notificationId={}", userId, notification.getNotificationId());
+        } catch (Exception e) {
+            log.error("Failed to save notification to Redis: userId={}, notificationId={}", userId, notification.getNotificationId(), e);
+        }
+    }
+
+    private String sendFcmMessage(String fcmToken, String title, String body) throws FirebaseMessagingException {
+        Message message = Message.builder()
+                .setToken(fcmToken)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .build();
+        return FirebaseMessaging.getInstance().send(message);
     }
 
     // 예약된 상담 찾기
@@ -228,7 +261,7 @@ public class FirebaseNotificationService {
     // 알림
     public void sendNotification(String token, String title, String body) {
         try {
-            sendMessage(token, title, body);
+            sendFcmMessage(token, title, body);
         } catch (FirebaseMessagingException e) {
             System.err.println("Failed to send notification: " + e.getMessage());
             e.printStackTrace();
