@@ -5,6 +5,7 @@ import com.springboot.chat.entity.ChatRoom;
 import com.springboot.chat.mapper.ChatLogMapper;
 import com.springboot.chat.mapper.ChatRoomMapper;
 import com.springboot.chat.service.ChatRoomService;
+import com.springboot.firebase.service.FirebaseNotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -20,17 +21,20 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
     private final ChatRoomMapper chatRoomMapper;
     private final ChatLogMapper chatLogMapper;
+    private final FirebaseNotificationService notificationService;
 
-    public ChatRoomController(ChatRoomService chatRoomService, ChatRoomMapper chatRoomMapper, ChatLogMapper chatLogMapper) {
+    public ChatRoomController(ChatRoomService chatRoomService, ChatRoomMapper chatRoomMapper, ChatLogMapper chatLogMapper, FirebaseNotificationService notificationService) {
         this.chatRoomService = chatRoomService;
         this.chatRoomMapper = chatRoomMapper;
         this.chatLogMapper = chatLogMapper;
+        this.notificationService = notificationService;
     }
     @PostMapping("/open")
     public ResponseEntity<?> openChatRoom(@RequestParam long memberId, Authentication authentication) {
         ChatRoom chatRoom = chatRoomService.createOrGetChatRoom(memberId, authentication);
         ChatRoomDto.DetailResponse responseDto = chatRoomMapper.chatRoomToChatRoomDetailResponseDto(chatRoom, chatLogMapper);
 
+        notificationService.sendChatRoomCreationNotification(memberId, chatRoom.getRoomId());
         return ResponseEntity.ok(responseDto);
     }
 
