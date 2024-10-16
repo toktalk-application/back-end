@@ -35,7 +35,7 @@ public class ChatRoomController {
         ChatRoomDto.DetailResponse responseDto = chatRoomMapper.chatRoomToChatRoomDetailResponseDto(chatRoom, chatLogMapper);
 
         notificationService.sendChatRoomCreationNotification(memberId, chatRoom.getRoomId());
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(new SingleResponseDto<>(responseDto));
     }
 
     @PatchMapping("/{room-id}/close")
@@ -43,7 +43,7 @@ public class ChatRoomController {
         ChatRoom chatRoom = chatRoomService.closeChatRoom(roomId, authentication);
         ChatRoomDto.DetailResponse responseDto = chatRoomMapper.chatRoomToChatRoomDetailResponseDto(chatRoom, chatLogMapper);
 
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(new SingleResponseDto<>(responseDto));
     }
 
     @GetMapping("{room-id}")
