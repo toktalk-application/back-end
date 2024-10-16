@@ -1,15 +1,12 @@
 package com.springboot.firebase.controller;
 
 import com.springboot.chat.service.ChatRoomService;
-import com.springboot.firebase.data.Notification;
 import com.springboot.firebase.dto.FcmSendDto;
-import com.springboot.firebase.service.FirebaseNotificationService;
+import com.springboot.firebase.service.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,48 +16,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/fcm")
 public class FcmController {
-    private final FirebaseNotificationService fcmService;
-    private final ChatRoomService chatRoomService;
+    private final NotificationService fcmService;
 
-    public FcmController(FirebaseNotificationService fcmService, ChatRoomService chatRoomService) {
+    public FcmController(NotificationService fcmService, ChatRoomService chatRoomService) {
         this.fcmService = fcmService;
-        this.chatRoomService = chatRoomService;
     }
 
     @PostMapping("/reservation-notification")
     public ResponseEntity<String> sendReservationNotification(@RequestParam Long reservationId) {
         fcmService.sendReservationNotification(reservationId);
         return ResponseEntity.ok("Reservation notification sent successfully");
-    }
-
-    @PostMapping("/reservation-reminder")
-    public ResponseEntity<String> sendReservationReminder(@RequestParam Long reservationId) {
-        fcmService.sendReservationReminder(reservationId);
-        return ResponseEntity.ok("Reservation reminder sent successfully");
-    }
-
-    @PostMapping("/cancellation-notification")
-    public ResponseEntity<String> sendCancellationNotification(
-            @RequestParam Long reservationId,
-            @RequestParam boolean cancelledByMember) {
-        fcmService.sendCancellationNotification(reservationId, cancelledByMember);
-        return ResponseEntity.ok("Cancellation notification sent successfully");
-    }
-
-    @PostMapping("/new-message-notification")
-    public ResponseEntity<String> sendNewMessageNotification(
-            @RequestParam Long recipientId,
-            @RequestParam boolean isCounselor) {
-        fcmService.sendNewMessageNotification(recipientId, isCounselor);
-        return ResponseEntity.ok("New message notification sent successfully");
-    }
-
-    @PostMapping("/review-request-notification")
-    public ResponseEntity<String> sendReviewRequestNotification(
-            @RequestParam Long memberId,
-            @RequestParam Long reservationId) {
-        fcmService.sendReviewRequestNotification(memberId, reservationId);
-        return ResponseEntity.ok("Review request notification sent successfully");
     }
 
     // 필요한 경우 일반적인 FCM 메시지 전송을 위한 엔드포인트

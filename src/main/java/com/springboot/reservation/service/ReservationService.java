@@ -7,6 +7,7 @@ import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
+import com.springboot.firebase.service.NotificationService;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
 import com.springboot.reservation.dto.ReservationDto;
@@ -33,6 +34,7 @@ public class ReservationService {
     private final CounselorService counselorService;
     private final MemberService memberService;
     private final CounselorRepository counselorRepository;
+    private final NotificationService notificationService;
 
     // 상담 예약 등록
     public Reservation createReservation(Reservation reservation, LocalDate date, List<LocalTime> startTimes){
@@ -91,6 +93,8 @@ public class ReservationService {
         Counselor counselor = counselorService.findCounselor(counselorId);
         counselor.updateRating(review.getRating());
         counselorRepository.save(counselor);
+
+        notificationService.sendReviewRegisteredNotification(reservation, review);
     }
     // 상담사 진단 등록
     public void registerReport(long reservationId, Report report, Authentication authentication){
@@ -114,6 +118,8 @@ public class ReservationService {
         // 문제 없으면 진단 등록
         reservation.setReport(report); // Reservation <-> Report 양방향 set 메서드
         reservationRepository.save(reservation);
+
+        notificationService.sendReportRegisteredNotification(reservation, report);
     }
 
     // 특정 회원이 특정 날짜에 잡은 예약 목록 조회
@@ -162,8 +168,8 @@ public class ReservationService {
         // 해당월에 잡힌 예약만 반환
         return reservations.stream()
                 .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getDate(), month))
-                .sorted(Comparator.comparing(Reservation::getDate))// 날짜순 정렬
-                .sorted(Comparator.comparing(Reservation::getStartTime))// 그 다음 시간순 정렬
+                .sorted(Comparator.comparing(Reservation::getDate) // 날짜순 정렬
+                        .thenComparing(Reservation::getStartTime)) // 그 다음 시간순 정렬
                 .collect(Collectors.toList());
     }
 
@@ -244,6 +250,9 @@ public class ReservationService {
 
         // 바뀐 상태 저장하고 리턴
         reservationRepository.save(reservation);
+
+        // 알림 서비스 호출 (알림 전송)
+        notificationService.sendReservationCanceledNotificationToCounselor(reservation);
     }
 
     // 예약 취소 (COUNSELOR)
@@ -279,10 +288,14 @@ public class ReservationService {
         }*/
         // 바뀐 상태 저장하고 리턴
         reservationRepository.save(reservation);
+
+        // 알림 서비스 호출 (알림 전송)
+        notificationService.sendReservationCanceledNotificationToMember(reservation);
     }
 
+
     // 상담의 상태를 완료로 변경
-    /*@Scheduled(cron = "0 50 * * * ?") // 매 시 50분마다 실행
+    @Scheduled(cron = "0 50 * * * ?") // 매 시 50분마다 실행
     private void completeCounselling(){
         // 상태가 PENDING인 상담들 조회
         List<Reservation> pendingReservations = reservationRepository.findByReservationStatus(Reservation.ReservationStatus.PENDING);
@@ -290,20 +303,22 @@ public class ReservationService {
         pendingReservations.forEach(reservation -> {
             LocalDateTime endTime = LocalDateTime.of(reservation.getDate(), reservation.getEndTime());
             // 종료 시간이 되었다면 상태를 완료로 변경
-            if(TimeUtils.isPassedTime(endTime)) reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
-            reservationRepository.save(reservation);
-        });
-    }*/
-
-    // 테스트용 스케줄러
-    @Scheduled(cron = "0 */1 * * * *")
-    private void testScheduler(){
-        List<Reservation> pendingReservations = reservationRepository.findByReservationStatus(Reservation.ReservationStatus.PENDING);
-        pendingReservations.forEach(reservation -> {
-            // 그냥 완료로 변경
-            reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
-            reservationRepository.save(reservation);
-            ;
+            if(TimeUtils.isPassedTime(endTime)) {
+                reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
+                reservationRepository.save(reservation);
+            }
         });
     }
+
+    // 테스트용 스케줄러
+//    @Scheduled(cron = "0 */1 * * * *")
+//    private void testScheduler(){
+//        List<Reservation> pendingReservations = reservationRepository.findByReservationStatus(Reservation.ReservationStatus.PENDING);
+//        pendingReservations.forEach(reservation -> {
+//            // 그냥 완료로 변경
+//            reservation.setReservationStatus(Reservation.ReservationStatus.COMPLETED);
+//            reservationRepository.save(reservation);
+//            ;
+//        });
+//    }
 }

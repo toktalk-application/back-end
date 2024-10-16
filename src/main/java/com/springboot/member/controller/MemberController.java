@@ -133,16 +133,6 @@ public class MemberController {
         );
     }
 
-    // 회원탈퇴
-    @DeleteMapping
-    public ResponseEntity<?> deleteMember(Authentication authentication){
-        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
-        memberService.quitMember(memberId);
-        return new ResponseEntity<>(
-                new SingleResponseDto<>(null), HttpStatus.OK
-        );
-    }
-
     @PostMapping("/fcm-token")
     public ResponseEntity<?> updateFcmToken(@RequestBody MemberDto.FcmTokenDto fcmTokenDto,
                                             Authentication authentication) {
@@ -165,6 +155,29 @@ public class MemberController {
                     .body("Error updating FCM token: " + e.getMessage());
         }
     }
+
+    // 남은 상담 건수 조회
+    @GetMapping("/reservation-counts")
+    public ResponseEntity<?> getReservationCounts(Authentication authentication){
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+
+        int count = memberService.getReservationCounts(memberId);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(count), HttpStatus.OK
+        );
+    }
+
+    // 회원탈퇴
+    @DeleteMapping
+    public ResponseEntity<?> quitMember(Authentication authentication){
+        long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
+        memberService.quitMember(memberId);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(null), HttpStatus.OK
+        );
+    }
+
 
 //    @PutMapping("/{userId}/fcm-token")
 //    public ResponseEntity<String> updateFcmToken(

@@ -6,7 +6,7 @@ import com.springboot.counselor.entity.Counselor;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
-import com.springboot.firebase.service.FirebaseNotificationService;
+import com.springboot.firebase.service.NotificationService;
 import com.springboot.member.entity.Member;
 import com.springboot.member.service.MemberService;
 import com.springboot.reservation.dto.ReportDto;
@@ -17,7 +17,6 @@ import com.springboot.reservation.mapper.ReservationMapper;
 import com.springboot.reservation.service.ReservationService;
 import com.springboot.response.SingleResponseDto;
 import com.springboot.utils.CredentialUtil;
-import com.springboot.utils.IntValidationUtil;
 import com.springboot.utils.UriCreator;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -42,7 +41,7 @@ public class ReservationController {
     private final ReservationMapper reservationMapper;
     private final MemberService memberService;
     private final CounselorService counselorService;
-    private final FirebaseNotificationService firebaseNotificationService;
+    private final NotificationService notificationService;
 
     // 상담 예약 등록
     @PostMapping
@@ -67,7 +66,7 @@ public class ReservationController {
 
         // 서비스 로직 실행
         Reservation reservation = reservationService.createReservation(tempReservation, postDto.getDate(), postDto.getStartTimes());
-        boolean notificationSent = firebaseNotificationService.sendReservationNotification(reservation.getReservationId());
+        boolean notificationSent = notificationService.sendReservationNotification(reservation.getReservationId());
         URI location = UriCreator.createUri(DEFAULT_URL, reservation.getReservationId());
         return ResponseEntity.created(location)
                 .header("Notification-Sent", String.valueOf(notificationSent))

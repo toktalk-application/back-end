@@ -49,6 +49,7 @@ public interface ReservationMapper {
 
         return new ReservationDto.Response(
                 reservation.getReservationId(),
+                reservation.getMember().getMemberId(),
                 reservation.getCounselorId(),
                 reservation.getMember().getNickname(),
                 reservation.getMember().getBirth().getYear(),

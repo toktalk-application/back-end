@@ -266,4 +266,29 @@ public class CounselorController {
                     .body("Error updating FCM token: " + e.getMessage());
         }
     }
+
+    // 상담사의 남은 상담 건수 조회
+    @GetMapping("/reservation-counts")
+    public ResponseEntity<?> getReservationCount(Authentication authentication){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+
+        int count = counselorService.getReservationCount(counselorId);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(count), HttpStatus.OK
+        );
+    }
+
+    // 상담사 탈퇴
+    @DeleteMapping
+    public ResponseEntity<?> quitCounselor(Authentication authentication){
+        long counselorId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "counselorId"));
+
+        // 서비스 로직 실행
+        counselorService.quitCounselor(counselorId);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>("상담사 탈퇴 완료"), HttpStatus.OK
+        );
+    }
 }

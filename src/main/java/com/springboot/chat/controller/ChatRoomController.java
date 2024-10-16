@@ -5,8 +5,7 @@ import com.springboot.chat.entity.ChatRoom;
 import com.springboot.chat.mapper.ChatLogMapper;
 import com.springboot.chat.mapper.ChatRoomMapper;
 import com.springboot.chat.service.ChatRoomService;
-import com.springboot.firebase.service.FirebaseNotificationService;
-import com.springboot.response.SingleResponseDto;
+import com.springboot.firebase.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -22,9 +21,9 @@ public class ChatRoomController {
     private final ChatRoomService chatRoomService;
     private final ChatRoomMapper chatRoomMapper;
     private final ChatLogMapper chatLogMapper;
-    private final FirebaseNotificationService notificationService;
+    private final NotificationService notificationService;
 
-    public ChatRoomController(ChatRoomService chatRoomService, ChatRoomMapper chatRoomMapper, ChatLogMapper chatLogMapper, FirebaseNotificationService notificationService) {
+    public ChatRoomController(ChatRoomService chatRoomService, ChatRoomMapper chatRoomMapper, ChatLogMapper chatLogMapper, NotificationService notificationService) {
         this.chatRoomService = chatRoomService;
         this.chatRoomMapper = chatRoomMapper;
         this.chatLogMapper = chatLogMapper;
