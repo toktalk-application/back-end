@@ -6,6 +6,7 @@ import com.springboot.chat.mapper.ChatLogMapper;
 import com.springboot.chat.mapper.ChatRoomMapper;
 import com.springboot.chat.service.ChatRoomService;
 import com.springboot.firebase.service.FirebaseNotificationService;
+import com.springboot.response.SingleResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +36,7 @@ public class ChatRoomController {
         ChatRoomDto.DetailResponse responseDto = chatRoomMapper.chatRoomToChatRoomDetailResponseDto(chatRoom, chatLogMapper);
 
         notificationService.sendChatRoomCreationNotification(memberId, chatRoom.getRoomId());
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(new SingleResponseDto<>(responseDto));
     }
 
     @PatchMapping("/{room-id}/close")
@@ -43,7 +44,7 @@ public class ChatRoomController {
         ChatRoom chatRoom = chatRoomService.closeChatRoom(roomId, authentication);
         ChatRoomDto.DetailResponse responseDto = chatRoomMapper.chatRoomToChatRoomDetailResponseDto(chatRoom, chatLogMapper);
 
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(new SingleResponseDto<>(responseDto));
     }
 
     @GetMapping("{room-id}")
