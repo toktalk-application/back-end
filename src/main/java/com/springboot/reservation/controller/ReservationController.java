@@ -119,10 +119,11 @@ public class ReservationController {
     // 회원이 특정월에 대해 자신이 예약한 모든 상담 조회
     @GetMapping("/monthly-detail")
     public ResponseEntity<?> getDetailedMonthlyReservations(Authentication authentication,
-                                                    @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
+                                                            @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
+                                                            @RequestParam(required = false) String status){
         long memberId = Long.parseLong(CredentialUtil.getCredentialField(authentication, "memberId"));
 
-        List<Reservation> reservations = reservationService.getDetailedMonthlyReservations(memberId, month);
+        List<Reservation> reservations = reservationService.getDetailedMonthlyReservations(memberId, month, status);
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(reservations)), HttpStatus.OK
@@ -156,9 +157,10 @@ public class ReservationController {
     @GetMapping("/{counselorId}/monthly-detail")
     public ResponseEntity<?> getMonthlyDetailReservations(Authentication authentication,
                                                           @PathVariable @Positive long counselorId,
-                                                          @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month){
+                                                          @RequestParam @DateTimeFormat(pattern = "yyyy-mm") YearMonth month,
+                                                          @RequestParam(required = false) String status){
 
-        List<Reservation> reservations = reservationService.getMonthlyDetailReservations(counselorId, month);
+        List<Reservation> reservations = reservationService.getMonthlyDetailReservations(counselorId, month, status);
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(reservationMapper.reservationsToReservationResponseDtos(reservations)), HttpStatus.OK

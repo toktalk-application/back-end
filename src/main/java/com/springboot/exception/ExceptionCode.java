@@ -11,6 +11,7 @@ public enum ExceptionCode {
     LICENSE_AMOUNT_VIOLATION(400, "The amount of licenses must be between 1 and 3"),
     CAREER_AMOUNT_VIOLATION(400, "The amount of careers must be between 1 and 3"),
     INVALID_MONTH(400, "The month must be between 1 and 12"),
+    INVALID_RESERVATION_STATUS(400, "Invalid reservation status parameter"),
     ACCESS_DENIED(403,"Access denied"),
     INVALID_USERTYPE(403, "Invalid usertype"),
     UNMATCHED_MEMBER(403, "Member id is not match"),
