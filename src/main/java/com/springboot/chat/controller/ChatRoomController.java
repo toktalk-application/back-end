@@ -6,6 +6,7 @@ import com.springboot.chat.mapper.ChatLogMapper;
 import com.springboot.chat.mapper.ChatRoomMapper;
 import com.springboot.chat.service.ChatRoomService;
 import com.springboot.firebase.service.NotificationService;
+import com.springboot.response.SingleResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
