@@ -160,7 +160,7 @@ public class ReservationService {
     }
 
     // 특정 회원이 특정월에 예약한 모든 상담 조회
-    public List<Reservation> getDetailedMonthlyReservations(long memberId, YearMonth month){
+    public List<Reservation> getDetailedMonthlyReservations(long memberId, YearMonth month, String status){
         Member member = memberService.findMember(memberId);
 
         // 멤버의 전체 예약 가져오기
@@ -168,6 +168,20 @@ public class ReservationService {
         // 해당월에 잡힌 예약만 반환
         return reservations.stream()
                 .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getDate(), month))
+                // 요청의 status가 null이라면 모두 통과, 아니라면 해당하는 상태의 예약만 통과
+                .filter(reservation -> {
+                    if(status == null || status.equals("ALL")) return true;
+                    switch (status){
+                        case "PENDING": return reservation.getReservationStatus().equals(Reservation.ReservationStatus.PENDING);
+                        case "CANCELLED":
+                            return Set.of(
+                                    Reservation.ReservationStatus.CANCELLED_BY_CLIENT,
+                                    Reservation.ReservationStatus.CANCELLED_BY_COUNSELOR
+                            ).contains(reservation.getReservationStatus());
+                        case "COMPLETED": return reservation.getReservationStatus().equals(Reservation.ReservationStatus.COMPLETED);
+                        default: throw new BusinessLogicException(ExceptionCode.INVALID_RESERVATION_STATUS);
+                    }
+                })
                 .sorted(Comparator.comparing(Reservation::getDate) // 날짜순 정렬
                         .thenComparing(Reservation::getStartTime)) // 그 다음 시간순 정렬
                 .collect(Collectors.toList());
@@ -210,13 +224,27 @@ public class ReservationService {
     }
 
     // 특정 상담사에게 특정월에 잡힌 모든 예약 정보 조회
-    public List<Reservation> getMonthlyDetailReservations(long counselorId, YearMonth month){
+    public List<Reservation> getMonthlyDetailReservations(long counselorId, YearMonth month, String status){
         // 특정 상담사의 예약 가져오기
         List<Reservation> reservations = reservationRepository.findByCounselorId(counselorId);
 
         // 해당월의 건만 반환
         return reservations.stream()
                 .filter(reservation -> CalendarUtil.isLocalDateInYearMonth(reservation.getDate(), month))
+                // 요청의 status가 null이라면 모두 통과, 아니라면 해당하는 상태의 예약만 통과
+                .filter(reservation -> {
+                    if(status == null || status.equals("ALL")) return true;
+                    switch (status){
+                        case "PENDING": return reservation.getReservationStatus().equals(Reservation.ReservationStatus.PENDING);
+                        case "CANCELLED":
+                            return Set.of(
+                                    Reservation.ReservationStatus.CANCELLED_BY_CLIENT,
+                                    Reservation.ReservationStatus.CANCELLED_BY_COUNSELOR
+                            ).contains(reservation.getReservationStatus());
+                        case "COMPLETED": return reservation.getReservationStatus().equals(Reservation.ReservationStatus.COMPLETED);
+                        default: throw new BusinessLogicException(ExceptionCode.INVALID_RESERVATION_STATUS);
+                    }
+                })
                 .sorted(Comparator.comparing(Reservation::getDate) // 날짜순으로 정렬
                         .thenComparing(Reservation::getStartTime)) // 그다음 시간순 정렬
                 .collect(Collectors.toList());
