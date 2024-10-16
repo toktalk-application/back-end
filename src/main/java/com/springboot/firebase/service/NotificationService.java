@@ -9,6 +9,9 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.stream.Collectors;
+
+import com.springboot.chat.entity.ChatRoom;
+import com.springboot.chat.repository.ChatRoomRepository;
 import com.springboot.counselor.service.CounselorService;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.exception.ExceptionCode;
@@ -36,6 +39,7 @@ import java.util.UUID;
 public class NotificationService {
     private final MemberRepository memberRepository;
     private final CounselorRepository counselorRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final ReservationRepository reservationRepository;
     private final CounselorService counselorService;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -56,6 +60,8 @@ public class NotificationService {
                     counselor.getCounselorId(),
                     0,
                     reservation.getReservationId(),
+                    "",
+                    "",
                     "상담이 취소되었습니다",
                     "상담이 취소되었습니다. 자세한 내용을 확인하세요.",
                     com.springboot.firebase.data.Notification.NotificationType.RESERVATION
@@ -90,6 +96,8 @@ public class NotificationService {
                     member.getMemberId(),
                     0,
                     reservation.getReservationId(),
+                    "",
+                    "",
                     "상담이 취소되었습니다",
                     "상담사가 상담을 취소하였습니다. 확인해 주세요.",
                     com.springboot.firebase.data.Notification.NotificationType.RESERVATION
@@ -123,6 +131,8 @@ public class NotificationService {
                     counselor.getCounselorId(),
                     0,
                     reservation.getReservationId(),
+                    "",
+                    "",
                     "새로운 리뷰가 등록되었습니다",
                     "새로운 리뷰가 등록되었습니다. 평점: " + review.getRating(),
                     com.springboot.firebase.data.Notification.NotificationType.RESERVATION
@@ -157,6 +167,8 @@ public class NotificationService {
                     member.getMemberId(),
                     0,
                     reservation.getReservationId(),
+                    "",
+                    "",
                     "새로운 진단 리포트가 등록되었습니다",
                     "상담사가 새로운 진단 리포트를 등록했습니다. 확인해 주세요.",
                     com.springboot.firebase.data.Notification.NotificationType.RESERVATION
@@ -191,8 +203,21 @@ public class NotificationService {
                 throw new IllegalArgumentException("Invalid roomId: " + roomId);
             }
 
+            ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHAT_ROOM_NOT_FOUND));
+
+            Counselor counselor = counselorRepository.findById(chatRoom.getCounselor().getCounselorId())
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.COUNSELOR_NOT_FOUND));
+
+
             com.springboot.firebase.data.Notification notification = createNotification(
-                    memberId, roomId, 0,"새로운 채팅방", "새로운 채팅방이 생성되었습니다.",
+                    memberId,
+                    roomId,
+                    0,
+                    member.getNickname(),
+                    counselor.getName(),
+                    "새로운 채팅방",
+                    "새로운 채팅방이 생성되었습니다.",
                     com.springboot.firebase.data.Notification.NotificationType.CHAT
             );
 
@@ -221,7 +246,11 @@ public class NotificationService {
             }
 
             com.springboot.firebase.data.Notification notification = createNotification(
-                    counselor.getCounselorId(), 0, reservation.getReservationId(),
+                    counselor.getCounselorId(),
+                    0,
+                    reservation.getReservationId(),
+                    "",
+                    counselor.getName(),
                     "새로운 상담 예약", "새로운 상담이 예약되었습니다. 확인해 주세요.",
                     com.springboot.firebase.data.Notification.NotificationType.RESERVATION
             );
@@ -293,12 +322,14 @@ public class NotificationService {
                 .orElseThrow(() -> new EntityNotFoundException("Member not found with id: " + memberId));
     }
 
-    private com.springboot.firebase.data.Notification createNotification(long userId,long roomId, long reservationId, String title, String body, com.springboot.firebase.data.Notification.NotificationType type) {
+    private com.springboot.firebase.data.Notification createNotification(long userId,long roomId, long reservationId, String nickName, String counselorName, String title, String body, com.springboot.firebase.data.Notification.NotificationType type) {
         return new com.springboot.firebase.data.Notification(
                 UUID.randomUUID().toString(),
                 userId,       // counselorId or userId
                 roomId,            // roomId는 필요 없을 때 0으로 설정
                 reservationId,
+                nickName,
+                counselorName,
                 title,
                 body,
                 LocalDateTime.now(),
