@@ -44,9 +44,6 @@ public class Counselor {
     private Status counselorStatus = Status.ACTIVE;
 
     @Column
-    private String ci;
-
-    @Column
     private String fcmToken;
 
     @Column
