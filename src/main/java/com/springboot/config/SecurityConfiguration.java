@@ -42,7 +42,7 @@ public class SecurityConfiguration {
     private final MemberService memberService;
     private final CounselorService counselorService;
     public SecurityConfiguration(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils, CustomAuthenticationProvider customAuthenticationProvider,
-                                 RedisTemplate<String, Object> redisTemplate, @Lazy MemberService memberService, @Lazy CounselorService counselorService) {
+                                 RedisTemplate<String, Object> redisTemplate, MemberService memberService, CounselorService counselorService) {
         this.jwtTokenizer = jwtTokenizer;
         this.authorityUtils = authorityUtils;
         this.customAuthenticationProvider = customAuthenticationProvider;
@@ -93,10 +93,6 @@ public class SecurityConfiguration {
                         .anyRequest().permitAll()
                 );
         return http.build();
-    }
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
     @Bean
     CorsConfigurationSource corsConfigurationSource(){
