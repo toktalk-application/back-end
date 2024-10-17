@@ -16,7 +16,7 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
-@RequestMapping("/chat_rooms")
+@RequestMapping("/chat-rooms")
 @Validated
 public class ChatRoomController {
     private final ChatRoomService chatRoomService;
