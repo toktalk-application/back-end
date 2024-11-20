@@ -57,7 +57,7 @@ aws:
 payment:
   toss:
     test_client_api_key : ${TOSS_CLIENT_KEY}
-    test_secrete_api_key : ${TOSS_SECRET_KEY}
+    test_secret_api_key : ${TOSS_SECRET_KEY}
     success_url : "http://localhost:8080/toss/success"
     fail_url : "http://localhost:8080/toss/fail"
     base-url: https://api.tosspayments.com/v1/payments
