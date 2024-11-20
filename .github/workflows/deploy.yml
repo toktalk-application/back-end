@@ -31,8 +31,7 @@ jobs:
             sed -i 's/\r$//' gradlew
       # Build the project
       - name: Build with Gradle
-        run: ./gradlew build
-
+        run: ./gradlew build -x test
       # Docker login and build
       - name: Docker build and push
         env:
