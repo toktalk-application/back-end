@@ -70,7 +70,7 @@ jobs:
           -e TOSS_CLIENT_KEY=${{ secrets.TOSS_CLIENT_KEY }} \\
           -e TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }} \\
           -e AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \\
-          -e AWS_ACCESS_SECRET_KEY=${{ secrets.AWS_ACCESS_SECRET_KEY }} \\
+          -e AWS_ACCESS_SECRET_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \\
           -e AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} \\
           toktalk'
             ]" \
