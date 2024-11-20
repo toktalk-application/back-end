@@ -1,0 +1,64 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        color-codes: true
+        use_sql_comments: true
+    defer-datasource-initialization: true
+    #    open-in-view: false # (주석 처리됨) Open EntityManager in View 패턴을 비활성화합니다.
+    output:
+      ansi:
+        enabled: ALWAYS
+  logging:
+    level:
+      org:
+        hibernate:
+          SQL: error
+          type:
+            descriptor:
+              sql:
+                BasicBinder: trace
+        springframework: #트랜잭션사용시
+          orm:
+            jpa: DEBUG
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+jwt:
+  key: ${JWT_KEY}
+  access-token-expiration-minutes: 50000
+  refresh-token-expiration-minutes: 50000
+user-id:
+  admin: admin
+codef:
+  client-id: ${CODEF_CLIENT_ID}
+  client-secret: ${CODEF_CLIENT_SECRET}
+aws:
+  access-key-id: ${AWS_ACCESS_KEY}
+  secret-access-key: ${AWS_ACCESS_SECRET_KEY}
+  region: ap-northeast-2
+  s3:
+    bucket-name: ${AWS_S3_BUCKET}
+payment:
+  toss:
+    test_client_api_key : ${TOSS_CLIENT_KEY}
+    test_secrete_api_key : ${TOSS_SECRET_KEY}
+    success_url : "http://localhost:8080/toss/success"
+    fail_url : "http://localhost:8080/toss/fail"
+    base-url: https://api.tosspayments.com/v1/payments
+    confirm-endpoint: /confirm

@@ -1,0 +1,84 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Set up JDK
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'zulu'
+
+      # Grant execute permission for gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # Build the project
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # Docker login and build
+      - name: Docker build and push
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        run: |
+          docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+          docker build -t toktalk .
+          docker tag toktalk kokyungbum/toktalk:${GITHUB_SHA::7}
+          docker push kokyungbum/toktalk:${GITHUB_SHA::7}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # Deploy to server
+      - name: Deploy to Server
+        run: |
+          aws ssm send-command \
+            --instance-ids i-05ee53499ed8f891d \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[
+              'if sudo docker ps -a --format \"{{.Names}}\" | grep -q \"^server$\"; then',
+              '  sudo docker stop server',
+              '  sudo docker rm server',
+              'fi',
+              'sudo docker pull kokyungbum/toktalk:${GITHUB_SHA::7}',
+              'sudo docker run -d --name server -p 8080:8080 \\
+
+              -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \\  
+              -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \\  
+              -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \\  
+              -e JWT_KEY=${{ secrets.JWT_KEY }} \\  
+              -e CODEF_CLIENT_ID=${{ secrets.CODEF_CLIENT_ID }} \\  
+              -e CODEF_CLIENT_SECRET=${{ secrets.CODEF_CLIENT_SECRET }} \\  
+              -e AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }} \\  
+              -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \\  
+              -e AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }} \\  
+              -e TOSS_CLIENT_KEY=${{ secrets.TOSS_CLIENT_KEY }} \\  
+              -e TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }} \\  
+              toktalk'
+            ]" \
+            --output text
