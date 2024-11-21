@@ -22,7 +22,23 @@ jobs:
       - name: Convert gradlew to Unix line endings
         run: |
           sed -i 's/\r$//' gradlew  
-
+      - name: Create Firebase Config
+        run: |
+            cat > src/main/resources/firebase/toktalk-app-firebase-adminsdk-4d2no-8c8b3e32e8.json << EOF
+            {
+              "type": "service_account",
+              "project_id": "toktalk-app",
+              "private_key_id": "${{ secrets.FIREBASE_KEY_ID }}",
+              "private_key": "${{ secrets.FIREBASE_KEY }}",
+              "client_email": "${{ secrets.CLIENT_EMAIL }}",
+              "client_id": "${{ secrets.CLIENT_ID }}",
+              "auth_uri": "${{ secrets.AUTH_URI }}",
+              "token_uri": "${{ secrets.TOKEN_URI }}",
+              "auth_provider_x509_cert_url": "${{ secrets.AUTH_PROVIDER_URL }}",
+              "client_x509_cert_url": "${{ secrets.CLIENT_URL }}",
+              "universe_domain": "${{ secrets.UNIVERSE_DOMAIN }}"
+            }
+            EOF
       - name: Build with Gradle
         run: ./gradlew build -x test
 
