@@ -78,11 +78,11 @@ class CounselorServiceTest {
             // 각각의 케이스에서 비즈니스 로직 예외가 발생하는지 확인하기
             if(isMustBePassed.get(i)){
                 assertDoesNotThrow(() -> counselorService.createCounselor(counselor, postDto),
-                        String.format("자격증이 %d개, 경력사항이 %d개이고 닉네임이 %s일 경우 정상적으로 계정이 생성되어야 합니다.",
+                        String.format("자격증이 %d개, 경력사항이 %d개이고 아이디가 %s일 경우 정상적으로 계정이 생성되어야 합니다.",
                                 licenseCount.get(i), careersCount.get(i), usernames.get(i)));
             }else{
                 assertThrows(BusinessLogicException.class, () -> counselorService.createCounselor(counselor, postDto),
-                        String.format("자격증이 %d개, 경력사항이 %d개이고 닉네임이 %s일 경우 예외가 발생해야 합니다.",
+                        String.format("자격증이 %d개, 경력사항이 %d개이고 아이디가 %s일 경우 예외가 발생해야 합니다.",
                                 licenseCount.get(i), careersCount.get(i), usernames.get(i)));
             }
         }
