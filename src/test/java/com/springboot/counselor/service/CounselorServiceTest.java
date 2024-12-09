@@ -301,6 +301,29 @@ class CounselorServiceTest {
 
     @Test
     void addInitialAvailableTimes() {
+        // given
+        // repository가 반환할 상담사 객체
+        Counselor counselor = new Counselor();
+        lenient().when(counselorRepository.findById(anyLong())).thenReturn(Optional.of(counselor));
+
+        // 모든 요일에 대해 기본 상담 시간 생성
+        for(DayOfWeek day : DayOfWeek.values()){
+            DefaultDay defaultDay = new DefaultDay();
+            defaultDay.setDayOfWeek(day);
+            defaultDay.setCounselor(counselor);
+
+            CounselorDto.DefaultDays dto = new CounselorDto.DefaultDays(day, List.of(
+                    LocalTime.of(9, 0)
+            ));
+            counselorService.setDefaultDays(1, dto, true);
+        }
+        // when
+        counselorService.addInitialAvailableTimes(1, 1);
+        // then
+        assertThrows(BusinessLogicException.class, ()-> counselorService.getAvailableDate(1, LocalDate.now().minusDays(1)).getAvailableTimes().size(),
+                "어제 날짜는 상담 가능 시간이 생성되지 않아야 합니다.");
+        assertNotEquals(0, counselor.getAvailableDate(LocalDate.now()).getAvailableTimes().size(),
+                "오늘 날짜부터 상담 가능 시간이 생성되어야 합니다.");
     }
 
     @Test
