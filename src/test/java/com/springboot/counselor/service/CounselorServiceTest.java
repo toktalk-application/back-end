@@ -2,11 +2,15 @@ package com.springboot.counselor.service;
 
 import com.springboot.auth.utils.CustomAuthorityUtils;
 import com.springboot.counselor.available_date.AvailableDate;
+import com.springboot.counselor.available_date.AvailableTime;
+import com.springboot.counselor.dto.AvailableDateDto;
 import com.springboot.counselor.dto.CounselorDto;
 import com.springboot.counselor.entity.*;
 import com.springboot.counselor.repository.CounselorRepository;
 import com.springboot.exception.BusinessLogicException;
 import com.springboot.member.repository.MemberRepository;
+import com.springboot.reservation.entity.Reservation;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -328,18 +332,120 @@ class CounselorServiceTest {
 
     @Test
     void addExtraAvailableTimes() {
+        // given
+        Counselor counselor = new Counselor();
+        // 모든 요일에 대해 기본 상담 시간 생성
+        lenient().when(counselorRepository.findById(anyLong())).thenReturn(Optional.of(counselor));
+        for(DayOfWeek day : DayOfWeek.values()){
+            DefaultDay defaultDay = new DefaultDay();
+            defaultDay.setDayOfWeek(day);
+            defaultDay.setCounselor(counselor);
+
+            CounselorDto.DefaultDays dto = new CounselorDto.DefaultDays(day, List.of(
+                    LocalTime.of(9, 0)
+            ));
+            counselorService.setDefaultDays(1, dto, true);
+        }
+        // repository가 반환할 상담사 리스트
+        List<Counselor> counselors = List.of(counselor);
+        lenient().when(counselorRepository.findAll()).thenReturn(counselors);
+        // when
+        counselorService.addExtraAvailableTimes();
+        // then
+        LocalDate twoMonthsAfter = LocalDate.now().plusMonths(2);
+        assertDoesNotThrow(() -> counselor.getAvailableDate(LocalDate.of(twoMonthsAfter.getYear(), twoMonthsAfter.getMonth(), 1)).getAvailableTimes(),
+                "메서드 호출 시점의 다다음 달에 상담가능시간이 생성되어야 합니다.");
     }
 
     @Test
     void getAvailableDate() {
+        // given
+        Counselor counselor = new Counselor();
+        lenient().when(counselorRepository.findById(anyLong())).thenReturn(Optional.of(counselor));
+
+        counselor.setAvailableDates(Map.of(
+                LocalDate.of(2024,12,1), new AvailableDate(),
+                LocalDate.of(2024, 12, 2), new AvailableDate()
+        ));
+        // when, then
+        for(int i = 1; i<= 3; i++){
+            int finalI = i;
+            if(finalI < 3){
+                assertDoesNotThrow(() -> counselorService.getAvailableDate(1, LocalDate.of(2024, 12, finalI)),
+                        String.format("2024-12-%d의 상담 가능 시간이 조회되어야 합니다.", finalI));
+            }else{
+                assertThrows(BusinessLogicException.class, () -> counselorService.getAvailableDate(1, LocalDate.of(2024, 12, finalI)),
+                        "존재하지 않는 날짜를 조회하려 하면 예외가 발생해야 합니다.");
+            }
+        }
     }
 
     @Test
     void getFilteredAvailableDate() {
+        // given
+
+        // 2024년 12월 1일 오전 9시, 10시 상담 가능한 상황 가정
+        Counselor counselor = new Counselor();
+        AvailableDate availableDate = new AvailableDate();
+
+        LocalDate date = LocalDate.of(2024, 12, 1);
+        // 그 중 9시는 이미 예약이 잡혀 있음
+        AvailableTime occupiedTime = new AvailableTime();
+        occupiedTime.setReservation(new Reservation());
+
+        availableDate.setAvailableTimes(Map.of(
+                LocalTime.of(9, 0), occupiedTime,
+                LocalTime.of(10, 0), new AvailableTime()
+        ));
+        counselor.setAvailableDates(Map.of(
+                date, availableDate
+        ));
+
+        lenient().when(counselorRepository.findById(anyLong())).thenReturn(Optional.of(counselor));
+
+        // when
+        AvailableDate filteredDate = counselorService.getFilteredAvailableDate(1, date);
+
+        // then
+        int actual = filteredDate.getAvailableTimes().size();
+        assertEquals(1, actual, "상담가능시간으로 9시, 10시가 있고 이 중 9시가 이미 예약되었다면 10시 하나만을 반환해야 합니다.");
     }
 
     @Test
     void updateAvailableDate() {
+        // given
+
+        // 2024년 12월 1일 오전 9시, 10시 상담 가능한 상황 가정
+        Counselor counselor = new Counselor();
+        AvailableDate availableDate = new AvailableDate();
+
+        LocalDate date = LocalDate.of(2024, 12, 1);
+        // 그 중 9시는 이미 예약이 잡혀 있음
+        AvailableTime occupiedTime = new AvailableTime();
+        occupiedTime.setReservation(new Reservation());
+
+        availableDate.setAvailableTimes(new HashMap<>(){{
+            put(LocalTime.of(9, 0), occupiedTime);
+            put(LocalTime.of(10, 0), new AvailableTime());
+        }});
+        counselor.setAvailableDates(Map.of(
+                date, availableDate
+        ));
+
+        // 변경 사항 dto
+        // 9시, 10시인 기존 시간을 10, 11시로 변경
+        AvailableDateDto.Patch patchDto = new AvailableDateDto.Patch();
+        patchDto.setDate(date);
+        patchDto.setTimes(List.of(
+                LocalTime.of(10, 0),
+                LocalTime.of(11, 0)
+        ));
+
+        lenient().when(counselorRepository.findById(anyLong())).thenReturn(Optional.of(counselor));
+
+        // when, then
+        assertThrows(BusinessLogicException.class, ()-> counselorService.updateAvailableDate(1, patchDto),
+                "이미 예약된 9시에 대해 삭제 불가로 예외가 발생해야 합니다.");
     }
 
     @Test
