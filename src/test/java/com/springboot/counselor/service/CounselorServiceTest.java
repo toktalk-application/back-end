@@ -450,30 +450,94 @@ class CounselorServiceTest {
 
     @Test
     void getDefaultTimesOfDay() {
+        // given
+        Counselor counselor = new Counselor();
+        // 기본 상담 시간이 월요일 9, 10시인 상담사
+        DefaultDay defaultDay = new DefaultDay();
+        DefaultTimeSlot timeSlot = new DefaultTimeSlot();
+        timeSlot.setStartTime(LocalTime.of(9, 0));
+        DefaultTimeSlot timeSlot2 = new DefaultTimeSlot();
+        timeSlot2.setStartTime(LocalTime.of(10, 0));
+        defaultDay.setDefaultTimeSlots(List.of(timeSlot, timeSlot2));
+        counselor.setDefaultDays(Map.of(
+                DayOfWeek.MONDAY, defaultDay
+        ));
+
+        lenient().when(counselorRepository.findById(anyLong())).thenReturn(Optional.of(counselor));
+
+        // when
+        List<LocalTime> times = counselorService.getDefaultTimesOfDay(1, DayOfWeek.MONDAY);
+        // then
+        assertEquals(2, times.size(), "결과 리스트의 크기는 2여야 합니다.");
+        assertEquals(9, times.get(0).getHour(), "첫 시간은 9시여야 합니다.");
+        assertEquals(10, times.get(times.size() - 1).getHour(), "마지막 시간은 10시여야 합니다.");
     }
 
     @Test
     void findCounselor() {
-    }
-
-    @Test
-    void testFindCounselor() {
+        // given
+        Counselor counselor = new Counselor();
+        counselor.setCounselorId(1);
+        lenient().when(counselorRepository.findById(anyLong())).thenReturn(Optional.of(counselor));
+        // when
+        Counselor foundCounselor = counselorService.findCounselor(1);
+        // then
+        assertEquals(1, foundCounselor.getCounselorId());
     }
 
     @Test
     void updateCounselor() {
+        // given
+        Counselor counselor = new Counselor();
+        lenient().when(counselorRepository.findById(anyLong())).thenReturn(Optional.of(counselor));
+
+        Counselor update = new Counselor();
+        update.setCounselorId(1);
+        update.setPhone("010-1111-1111");
+        update.setCompany("Toktalk");
+        update.setName("홍길동");
+        // when
+        counselorService.updateCounselor(update);
+        Counselor result = counselorService.findCounselor(1);
+        // then
+        assertEquals("010-1111-1111", result.getPhone());
+        assertEquals("Toktalk", result.getCompany());
+        assertEquals("홍길동", result.getName());
     }
 
     @Test
     void getAllActiveCounselors() {
-    }
+        // given
+        Counselor counselorA = new Counselor();
+        Counselor counselorB = new Counselor();
+        Counselor counselorC = new Counselor();
+        counselorC.setCounselorStatus(Counselor.Status.INACTIVE);
 
-    @Test
-    void updateFcmToken() {
+        lenient().when(counselorRepository.findAll()).thenReturn(List.of(
+                counselorA,
+                counselorB,
+                counselorC
+                ));
+
+        // when
+        List<Counselor> counselors = counselorService.getAllActiveCounselors();
+        // then
+        assertEquals(2, counselors.size());
     }
 
     @Test
     void getCounselorIdByUserId() {
+        // given
+        Counselor counselor = new Counselor();
+        counselor.setCounselorId(1);
+        counselor.setUserId("whgkswo");
+
+        lenient().when(counselorRepository.findByUserId(anyString())).thenReturn(Optional.of(counselor));
+
+        // when
+        long id = counselorService.getCounselorIdByUserId("whgkswo");
+        // then
+        assertEquals(1, id);
     }
 
     @Test
